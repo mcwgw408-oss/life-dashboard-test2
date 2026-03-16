@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "For smooth page transitions, modal animations, and micro-interactions"
+  "date-fns": "For elegant and robust date formatting and manipulation"
+  "recharts": "For rendering beautiful financial charts in the Money tab"
+  "lucide-react": "For beautiful, consistent iconography across the dashboard"
+  "clsx": "For conditional class merging"
+  "tailwind-merge": "For safe tailwind class merging in UI components"
+
+images:
+  - path: "artifacts/life-dashboard/public/images/bg-texture.png"
+    description: "A very soft, subtle, pastel watercolor texture blending warm cream, pale peach, and gentle sage green. Minimalist, mostly white space, very light and airy, perfect for a subtle app background."
+    aspect_ratio: "16:9"
+
+notes:
+  - "The app uses a soft pastel design system."
+  - "API hooks are imported from @workspace/api-client-react."
+  - "Mutations require wrapped objects like { data: payload } or { id, data: payload } based on Orval generation."

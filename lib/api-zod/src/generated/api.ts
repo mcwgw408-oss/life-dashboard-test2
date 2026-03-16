@@ -343,6 +343,7 @@ export const GetMoneyRecordsResponseItem = zod.object({
   id: zod.number(),
   type: zod.enum(["income", "expense"]),
   amount: zod.number(),
+  category: zod.string().optional(),
   description: zod.string().optional(),
   date: zod.string(),
   createdAt: zod.string(),
@@ -355,6 +356,7 @@ export const GetMoneyRecordsResponse = zod.array(GetMoneyRecordsResponseItem);
 export const CreateMoneyRecordBody = zod.object({
   type: zod.enum(["income", "expense"]),
   amount: zod.number(),
+  category: zod.string().optional(),
   description: zod.string().optional(),
   date: zod.string(),
 });
@@ -369,6 +371,7 @@ export const UpdateMoneyRecordParams = zod.object({
 export const UpdateMoneyRecordBody = zod.object({
   type: zod.enum(["income", "expense"]).optional(),
   amount: zod.number().optional(),
+  category: zod.string().optional(),
   description: zod.string().optional(),
   date: zod.string().optional(),
 });
@@ -377,6 +380,7 @@ export const UpdateMoneyRecordResponse = zod.object({
   id: zod.number(),
   type: zod.enum(["income", "expense"]),
   amount: zod.number(),
+  category: zod.string().optional(),
   description: zod.string().optional(),
   date: zod.string(),
   createdAt: zod.string(),

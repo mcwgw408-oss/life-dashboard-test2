@@ -87,6 +87,7 @@ export const moneyRecordsTable = pgTable("money_records", {
   id: serial("id").primaryKey(),
   type: text("type").notNull(), // income, expense
   amount: integer("amount").notNull(),
+  category: text("category"),
   description: text("description"),
   date: text("date").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),

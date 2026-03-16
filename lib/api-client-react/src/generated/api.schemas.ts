@@ -172,6 +172,7 @@ export interface MoneyRecord {
   id: number;
   type: MoneyRecordType;
   amount: number;
+  category?: string;
   description?: string;
   date: string;
   createdAt: string;
@@ -188,6 +189,7 @@ export const CreateMoneyRecordInputType = {
 export interface CreateMoneyRecordInput {
   type: CreateMoneyRecordInputType;
   amount: number;
+  category?: string;
   description?: string;
   date: string;
 }
@@ -203,6 +205,7 @@ export const UpdateMoneyRecordInputType = {
 export interface UpdateMoneyRecordInput {
   type?: UpdateMoneyRecordInputType;
   amount?: number;
+  category?: string;
   description?: string;
   date?: string;
 }

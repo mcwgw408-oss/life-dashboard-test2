@@ -1065,6 +1065,8 @@ components:
           enum: [income, expense]
         amount:
           type: integer
+        category:
+          type: string
         description:
           type: string
         date:
@@ -1081,6 +1083,8 @@ components:
           enum: [income, expense]
         amount:
           type: integer
+        category:
+          type: string
         description:
           type: string
         date:
@@ -1095,6 +1099,8 @@ components:
           enum: [income, expense]
         amount:
           type: integer
+        category:
+          type: string
         description:
           type: string
         date:

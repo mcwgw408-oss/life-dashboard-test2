@@ -4,6 +4,10 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+## Recent Changes
+
+- **お金ページ → 家計簿にリニューアル** (2026-03-16): 支出入力（日付/金額/カテゴリ/メモ）、支出一覧、月合計、カテゴリ別円グラフを実装。DBの`money_records`テーブルに`category`カラムを追加。
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces

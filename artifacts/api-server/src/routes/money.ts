@@ -20,10 +20,11 @@ router.get("/records", async (req, res) => {
 });
 
 router.post("/records", async (req, res) => {
-  const { type, amount, description, date } = req.body;
+  const { type, amount, category, description, date } = req.body;
   const [record] = await db.insert(moneyRecordsTable).values({
     type,
     amount,
+    category: category ?? null,
     description: description ?? null,
     date,
   }).returning();
@@ -32,10 +33,11 @@ router.post("/records", async (req, res) => {
 
 router.patch("/records/:id", async (req, res) => {
   const id = Number(req.params.id);
-  const { type, amount, description, date } = req.body;
+  const { type, amount, category, description, date } = req.body;
   const update: Record<string, unknown> = {};
   if (type !== undefined) update.type = type;
   if (amount !== undefined) update.amount = amount;
+  if (category !== undefined) update.category = category;
   if (description !== undefined) update.description = description;
   if (date !== undefined) update.date = date;
   const [record] = await db.update(moneyRecordsTable).set(update).where(eq(moneyRecordsTable.id, id)).returning();

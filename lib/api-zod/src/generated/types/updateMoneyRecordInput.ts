@@ -10,6 +10,7 @@ import type { UpdateMoneyRecordInputType } from "./updateMoneyRecordInputType";
 export interface UpdateMoneyRecordInput {
   type?: UpdateMoneyRecordInputType;
   amount?: number;
+  category?: string;
   description?: string;
   date?: string;
 }

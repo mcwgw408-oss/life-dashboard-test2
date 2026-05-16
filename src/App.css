@@ -1,211 +1,257 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
-import './App.css';
-
-const STORAGE_KEY = 'life-dashboard-collapse-signs';
-
-const signItems = [
-  '眠りが浅い',
-  '食事が乱れている',
-  '返信や連絡が重く感じる',
-  '部屋や机が散らかってきた',
-  '予定を先送りしている',
-  '小さな音や言葉に敏感になる',
-  '体が重い、だるい',
-  'ひとりで抱え込みがち',
-];
-
-type SavedSign = {
-  id: string;
-  savedAt: string;
-  checkedItems: string[];
-  memo?: string;
-};
-
-function readSavedSigns(): SavedSign[] {
-  const rawValue = localStorage.getItem(STORAGE_KEY);
-
-  if (!rawValue) {
-    return [];
-  }
-
-  try {
-    const parsedValue = JSON.parse(rawValue);
-
-    if (!Array.isArray(parsedValue)) {
-      return [];
-    }
-
-    return parsedValue
-      .filter((item): item is SavedSign => {
-        return (
-          item &&
-          typeof item.id === 'string' &&
-          typeof item.savedAt === 'string' &&
-          Array.isArray(item.checkedItems)
-        );
-      })
-      .map((item) => ({
-        id: item.id,
-        savedAt: item.savedAt,
-        checkedItems: item.checkedItems.filter(
-          (checkedItem): checkedItem is string => typeof checkedItem === 'string',
-        ),
-        memo: typeof item.memo === 'string' ? item.memo : '',
-      }));
-  } catch {
-    return [];
-  }
+.app {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0 auto;
+  max-width: 1040px;
+  min-height: 100vh;
+  padding: 2rem;
 }
 
-function formatSavedAt(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
+.check-panel,
+.saved-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.08);
+  padding: 1.5rem;
 }
 
-function App() {
-  const [savedSigns, setSavedSigns] = useState<SavedSign[]>(() => readSavedSigns());
-  const [checkedItems, setCheckedItems] = useState<string[]>([]);
-  const [memo, setMemo] = useState('');
-
-  const checkedItemSet = useMemo(() => new Set(checkedItems), [checkedItems]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSigns));
-  }, [savedSigns]);
-
-  function handleToggleSign(item: string) {
-    setCheckedItems((currentItems) => {
-      if (currentItems.includes(item)) {
-        return currentItems.filter((currentItem) => currentItem !== item);
-      }
-
-      return [...currentItems, item];
-    });
-  }
-
-  function handleSave(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (checkedItems.length === 0 && memo.trim().length === 0) {
-      return;
-    }
-
-    const nextSign: SavedSign = {
-      id: crypto.randomUUID(),
-      savedAt: new Date().toISOString(),
-      checkedItems,
-      memo: memo.trim(),
-    };
-
-    setSavedSigns((currentSigns) => [nextSign, ...currentSigns]);
-    setCheckedItems([]);
-    setMemo('');
-  }
-
-  function handleDeleteSign(id: string) {
-    setSavedSigns((currentSigns) => currentSigns.filter((sign) => sign.id !== id));
-  }
-
-  return (
-    <main className="app">
-      <section className="check-panel" aria-labelledby="check-title">
-        <div className="section-heading">
-          <p className="eyebrow">Self Check</p>
-          <h1 id="check-title">崩れ始めサインチェック</h1>
-          <p className="lead">
-            いま当てはまるサインを残して、あとから変化を見返せるようにします。
-          </p>
-        </div>
-
-        <form className="check-form" onSubmit={handleSave}>
-          <fieldset className="sign-grid">
-            <legend>チェック項目</legend>
-            {signItems.map((item) => (
-              <label className="sign-option" key={item}>
-                <input
-                  checked={checkedItemSet.has(item)}
-                  onChange={() => handleToggleSign(item)}
-                  type="checkbox"
-                />
-                <span>{item}</span>
-              </label>
-            ))}
-          </fieldset>
-
-          <label className="memo-field">
-            <span>メモ</span>
-            <textarea
-              onChange={(event) => setMemo(event.target.value)}
-              placeholder="気づいたことがあれば入力"
-              rows={4}
-              value={memo}
-            />
-          </label>
-
-          <button className="primary-button" type="submit">
-            保存する
-          </button>
-        </form>
-      </section>
-
-      <section className="saved-panel" aria-labelledby="saved-title">
-        <div className="saved-header">
-          <div>
-            <p className="eyebrow">History</p>
-            <h2 id="saved-title">保存済みの崩れ始めサイン</h2>
-          </div>
-          <p className="saved-count">合計 {savedSigns.length} 件</p>
-        </div>
-
-        {savedSigns.length > 0 ? (
-          <div className="saved-list">
-            {savedSigns.map((sign) => (
-              <article className="saved-card" key={sign.id}>
-                <div className="saved-card-header">
-                  <time dateTime={sign.savedAt}>{formatSavedAt(sign.savedAt)}</time>
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDeleteSign(sign.id)}
-                    type="button"
-                  >
-                    削除
-                  </button>
-                </div>
-
-                {sign.checkedItems.length > 0 && (
-                  <ul className="checked-list" aria-label="チェックされた項目">
-                    {sign.checkedItems.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                )}
-
-                {sign.memo && (
-                  <div className="saved-memo">
-                    <span>メモ</span>
-                    <p>{sign.memo}</p>
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="empty-message">まだ保存されたサインはありません。</p>
-        )}
-      </section>
-    </main>
-  );
+.section-heading,
+.saved-header {
+  margin-bottom: 1.25rem;
 }
 
-export default App;
+.eyebrow {
+  color: #0f766e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  margin-bottom: 0.75rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0;
+}
+
+.lead {
+  color: #4b5563;
+  line-height: 1.75;
+  margin-bottom: 0;
+  max-width: 42rem;
+}
+
+.check-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.sign-grid {
+  border: 0;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+}
+
+.sign-grid legend,
+.memo-field > span {
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.65rem;
+}
+
+.sign-option {
+  align-items: flex-start;
+  background: #f8fafc;
+  border: 1px solid #dbe3ea;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  gap: 0.65rem;
+  min-height: 3.4rem;
+  padding: 0.9rem;
+}
+
+.sign-option input {
+  accent-color: #0f766e;
+  flex: 0 0 auto;
+  height: 1.05rem;
+  margin-top: 0.12rem;
+  width: 1.05rem;
+}
+
+.sign-option span {
+  color: #111827;
+  line-height: 1.45;
+}
+
+.memo-field {
+  display: grid;
+}
+
+.memo-field textarea {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #111827;
+  font: inherit;
+  line-height: 1.6;
+  min-height: 8rem;
+  padding: 0.85rem;
+  resize: vertical;
+}
+
+.primary-button,
+.delete-button {
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.primary-button {
+  background: #0f766e;
+  color: #ffffff;
+  justify-self: start;
+  padding: 0.85rem 1.2rem;
+}
+
+.saved-header {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.saved-count {
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  border-radius: 999px;
+  color: #155e75;
+  flex: 0 0 auto;
+  font-weight: 700;
+  margin: 0;
+  padding: 0.45rem 0.8rem;
+}
+
+.saved-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.saved-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+}
+
+.saved-card-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.saved-card time {
+  color: #334155;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.delete-button {
+  background: #fee2e2;
+  color: #991b1b;
+  flex: 0 0 auto;
+  padding: 0.55rem 0.75rem;
+}
+
+.checked-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checked-list li {
+  background: #f1f5f9;
+  border-radius: 999px;
+  color: #1f2937;
+  line-height: 1.4;
+  padding: 0.4rem 0.65rem;
+}
+
+.saved-memo {
+  background: #fffbeb;
+  border-radius: 8px;
+  padding: 0.8rem;
+}
+
+.saved-memo span {
+  color: #92400e;
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.saved-memo p,
+.empty-message {
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+
+.empty-message {
+  color: #64748b;
+}
+
+@media (max-width: 700px) {
+  .app {
+    padding: 1rem;
+  }
+
+  .check-panel,
+  .saved-panel {
+    padding: 1rem;
+  }
+
+  .sign-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-header,
+  .saved-card-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .saved-count,
+  .delete-button,
+  .primary-button {
+    text-align: center;
+    width: 100%;
+  }
+
+  .checked-list {
+    display: grid;
+  }
+}

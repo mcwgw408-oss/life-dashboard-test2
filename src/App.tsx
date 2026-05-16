@@ -9,6 +9,7 @@ import {
   Coffee,
   Crown,
   Dumbbell,
+  Film,
   HeartPulse,
   Home,
   ListChecks,
@@ -25,10 +26,12 @@ import {
 } from "lucide-react";
 import { CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
 
-type View = "home" | "tasks" | "recovery" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo";
+type View = "home" | "tasks" | "recovery" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
 type TaskStatus = "todo" | "doing" | "done";
 type TaskPriority = "low" | "medium" | "high";
 type MoodStatus = "stable" | "uneasy" | "tired" | "slipping" | "recovering";
+type MediaKind = "book" | "movie";
+type MediaStatus = "want" | "progress" | "done";
 type Energy = "low" | "middle" | "high";
 type Mind = "calm" | "uneasy" | "overloaded";
 type Need = "rest" | "light" | "connect";
@@ -63,6 +66,18 @@ type SignCheck = { id: string; date: string; checked: SignId[]; note: string; cr
 type LibraryEntry = { id: string; title: string; body: string; tag: string; custom?: boolean };
 type RouletteAction = { id: string; text: string; category: string; favorite?: boolean; custom?: boolean };
 type RouletteHistory = { id: string; text: string; status: "drawn" | "done" | "skipped"; createdAt: string };
+
+type MediaLogEntry = {
+  id: string;
+  kind: MediaKind;
+  title: string;
+  creator: string;
+  date: string;
+  status: MediaStatus;
+  memo: string;
+  rating: number;
+  createdAt: string;
+};
 
 type ShoppingItem = {
   id: string;
@@ -107,6 +122,7 @@ const ROULETTE_ACTIONS_STORAGE_KEY = "today-roulette-actions-v1";
 const ROULETTE_HISTORY_STORAGE_KEY = "today-roulette-history-v1";
 const SHOPPING_STORAGE_KEY = "shopping-list-mobile-v1";
 const VISIT_MEMO_STORAGE_KEY = "visit-nursing-medical-memo-v1";
+const MEDIA_LOG_STORAGE_KEY = "reading-movie-log-v1";
 
 const today = toDateInputValue(new Date());
 
@@ -121,6 +137,7 @@ const menuItems: Array<{ view: Exclude<View, "home">; title: string; description
 ];
 
 menuItems.push({ view: "visitMemo", title: "訪看・診察メモ", description: "毎日の記録をコピー用に整える", icon: NotebookPen });
+menuItems.push({ view: "mediaLog", title: "読書・映画ログ", description: "本と映画の記録、感想、もう一度度を残す", icon: Film });
 
 const moodOptions: Array<{ value: MoodStatus; label: string }> = [
   { value: "stable", label: "安定" },
@@ -133,6 +150,8 @@ const moodOptions: Array<{ value: MoodStatus; label: string }> = [
 const moodLabel = Object.fromEntries(moodOptions.map((item) => [item.value, item.label])) as Record<MoodStatus, string>;
 const priorityLabel: Record<TaskPriority, string> = { low: "低", medium: "中", high: "高" };
 const statusLabel: Record<TaskStatus, string> = { todo: "未着手", doing: "進行中", done: "完了" };
+const mediaKindLabel: Record<MediaKind, string> = { book: "読書", movie: "映画" };
+const mediaStatusLabel: Record<MediaStatus, string> = { want: "見たい・読みたい", progress: "途中", done: "完了" };
 
 const signOptions: Array<{ id: SignId; label: string; guide: string }> = [
   { id: "sleep", label: "眠りが浅い", guide: "寝る前の刺激を減らして、予定を詰めすぎない。" },
@@ -320,6 +339,7 @@ export function App() {
             {view === "roulette" && <RouletteApp />}
             {view === "shopping" && <ShoppingListApp />}
             {view === "visitMemo" && <VisitMemoApp />}
+            {view === "mediaLog" && <MediaLogApp />}
           </>
         )}
       </section>
@@ -737,6 +757,128 @@ function RouletteApp() {
           </article>
         ))}
         {history.length > 0 ? <div className="history-line">最新: {history[0].text} ({formatTime(history[0].createdAt)})</div> : null}
+      </div>
+    </section>
+  );
+}
+
+function MediaLogApp() {
+  const [entries, setEntries] = useState<MediaLogEntry[]>(readStorage<MediaLogEntry[]>(MEDIA_LOG_STORAGE_KEY, []));
+  const [kind, setKind] = useState<MediaKind>("book");
+  const [title, setTitle] = useState("");
+  const [creator, setCreator] = useState("");
+  const [date, setDate] = useState(today);
+  const [status, setStatus] = useState<MediaStatus>("want");
+  const [memo, setMemo] = useState("");
+  const [rating, setRating] = useState(3);
+
+  useEffect(() => window.localStorage.setItem(MEDIA_LOG_STORAGE_KEY, JSON.stringify(entries)), [entries]);
+
+  const sortedEntries = useMemo(
+    () => [...entries].sort((a, b) => (b.date || b.createdAt).localeCompare(a.date || a.createdAt)),
+    [entries],
+  );
+
+  function addEntry(event: FormEvent) {
+    event.preventDefault();
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return;
+    setEntries((current) => [
+      {
+        id: createId("media-log"),
+        kind,
+        title: trimmedTitle,
+        creator: creator.trim(),
+        date,
+        status,
+        memo: memo.trim(),
+        rating,
+        createdAt: new Date().toISOString(),
+      },
+      ...current,
+    ]);
+    setTitle("");
+    setCreator("");
+    setDate(today);
+    setStatus("want");
+    setMemo("");
+    setRating(3);
+  }
+
+  return (
+    <section className="panel media-log-panel">
+      <form className="media-form" onSubmit={addEntry}>
+        <label className="field">
+          <span>種類</span>
+          <select value={kind} onChange={(event) => setKind(event.target.value as MediaKind)}>
+            <option value="book">読書</option>
+            <option value="movie">映画</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>タイトル</span>
+          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="作品名" />
+        </label>
+        <label className="field">
+          <span>作者・監督</span>
+          <input value={creator} onChange={(event) => setCreator(event.target.value)} placeholder="任意" />
+        </label>
+        <label className="field">
+          <span>日付</span>
+          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+        </label>
+        <label className="field">
+          <span>状態</span>
+          <select value={status} onChange={(event) => setStatus(event.target.value as MediaStatus)}>
+            <option value="want">見たい・読みたい</option>
+            <option value="progress">途中</option>
+            <option value="done">完了</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>もう一度見たい・読みたい度</span>
+          <select value={rating} onChange={(event) => setRating(Number(event.target.value))}>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="media-memo-field">
+          <TextArea label="感想メモ" value={memo} onChange={setMemo} />
+        </div>
+        <button className="primary-button full" type="submit">
+          <Plus size={18} />
+          追加
+        </button>
+      </form>
+
+      <div className="media-log-list">
+        {sortedEntries.length === 0 ? (
+          <Empty text="読書・映画ログはまだありません。" />
+        ) : (
+          sortedEntries.map((entry) => (
+            <article className="media-card" key={entry.id}>
+              <div className="media-card-head">
+                <span className={entry.kind === "book" ? "media-kind book" : "media-kind movie"}>{mediaKindLabel[entry.kind]}</span>
+                <button className="icon-button danger" type="button" onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`${entry.title}を削除`}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="media-card-body">
+                <strong>{entry.title}</strong>
+                {entry.creator ? <small>{entry.creator}</small> : null}
+              </div>
+              <div className="media-meta">
+                <span>{entry.date ? formatDate(entry.date) : "日付なし"}</span>
+                <span>{mediaStatusLabel[entry.status]}</span>
+                <span>{"★".repeat(entry.rating)}{"☆".repeat(5 - entry.rating)}</span>
+              </div>
+              {entry.memo ? <p>{entry.memo}</p> : null}
+            </article>
+          ))
+        )}
       </div>
     </section>
   );
@@ -1205,4 +1347,3 @@ function LogCard({ log, onDelete }: { log: RecoveryLog; onDelete: () => void }) 
 function Empty({ text }: { text: string }) {
   return <p className="empty-state">{text}</p>;
 }
-export default App;

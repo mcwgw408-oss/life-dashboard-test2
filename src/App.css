@@ -2829,3 +2829,181 @@ select:focus {
     min-height: 86px !important;
   }
 }
+
+/* Final sleep-log-only visual pass. Keep this at the bottom so it wins. */
+.sleep-log-panel {
+  padding: 16px !important;
+  gap: 18px !important;
+  border: 1px solid rgba(52, 74, 66, 0.16) !important;
+  border-radius: 8px !important;
+  background: #fbfaf4 !important;
+}
+
+.sleep-log-form {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(52, 74, 66, 0.12) !important;
+  border-radius: 8px !important;
+  background: #fffefa !important;
+}
+
+.sleep-log-form .field,
+.sleep-log-wide .field {
+  gap: 7px !important;
+}
+
+.sleep-log-form .field span,
+.sleep-log-wide .field span {
+  color: #5f7168 !important;
+  font-size: 0.82rem !important;
+  font-weight: 900 !important;
+}
+
+.sleep-log-form input,
+.sleep-log-form select {
+  height: 52px !important;
+  min-height: 52px !important;
+  border: 1px solid rgba(52, 74, 66, 0.18) !important;
+  border-radius: 8px !important;
+  padding: 0 14px !important;
+  background: #fffdf8 !important;
+  color: #26352e !important;
+}
+
+.sleep-log-form textarea {
+  min-height: 112px !important;
+  border: 1px solid rgba(52, 74, 66, 0.18) !important;
+  border-radius: 8px !important;
+  padding: 12px 14px !important;
+  background: #fffdf8 !important;
+  color: #26352e !important;
+  line-height: 1.65 !important;
+}
+
+.sleep-log-wide,
+.sleep-log-submit {
+  grid-column: 1 / -1 !important;
+}
+
+.sleep-log-submit {
+  min-height: 54px !important;
+  border-radius: 8px !important;
+  background: #466f62 !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+}
+
+.sleep-log-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.sleep-log-card {
+  padding: 16px !important;
+  gap: 14px !important;
+  border: 1px solid rgba(52, 74, 66, 0.14) !important;
+  border-radius: 8px !important;
+  background: #fffefa !important;
+  box-shadow: 0 10px 24px rgba(43, 57, 50, 0.08) !important;
+}
+
+.sleep-log-head {
+  grid-template-columns: minmax(0, 1fr) 44px !important;
+  gap: 12px !important;
+  align-items: start !important;
+}
+
+.sleep-log-head > div {
+  gap: 7px !important;
+}
+
+.sleep-log-head span {
+  padding: 5px 10px !important;
+  border-radius: 999px !important;
+  color: #526a70 !important;
+  background: #e6f0f1 !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+}
+
+.sleep-log-head strong {
+  color: #26352e !important;
+  font-size: 1.16rem !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+}
+
+.sleep-log-card .icon-button.danger {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  border-radius: 8px !important;
+  color: #9c463d !important;
+  background: #fff0ed !important;
+}
+
+.sleep-log-tags {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+.sleep-log-tags span {
+  min-height: 30px !important;
+  padding: 6px 10px !important;
+  border-radius: 999px !important;
+  color: #4f6268 !important;
+  background: #eef5f2 !important;
+  font-size: 0.82rem !important;
+  font-weight: 850 !important;
+}
+
+.sleep-log-card p {
+  gap: 5px !important;
+  padding-top: 2px !important;
+  color: #536158 !important;
+  line-height: 1.7 !important;
+}
+
+.sleep-log-card b {
+  color: #6c7972 !important;
+  font-size: 0.8rem !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 820px) {
+  .sleep-log-form,
+  .sleep-log-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sleep-log-panel {
+    padding: 12px !important;
+    gap: 14px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .sleep-log-panel {
+    padding: 10px !important;
+  }
+
+  .sleep-log-form {
+    padding: 12px !important;
+    gap: 12px !important;
+  }
+
+  .sleep-log-form input,
+  .sleep-log-form select,
+  .sleep-log-submit {
+    min-height: 56px !important;
+    height: 56px !important;
+  }
+
+  .sleep-log-card {
+    padding: 15px !important;
+  }
+}

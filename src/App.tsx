@@ -1204,7 +1204,14 @@ function LogCard({ log, onDelete }: { log: RecoveryLog; onDelete: () => void }) 
     </article>
   );
 }
-
+function MediaLogApp() {
+  return (
+    <section className="panel">
+      <h2>読書・映画ログ</h2>
+      <p>ここに読書・映画ログUIを追加予定</p>
+    </section>
+  );
+}
 function Empty({ text }: { text: string }) {
   return <p className="empty-state">{text}</p>;
 }

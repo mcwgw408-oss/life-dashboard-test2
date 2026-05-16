@@ -15,6 +15,7 @@ import {
   Home,
   ListChecks,
   Milk,
+  Moon,
   NotebookPen,
   PackagePlus,
   Plus,
@@ -28,7 +29,7 @@ import {
 } from "lucide-react";
 import { CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
 
-type View = "home" | "tasks" | "recovery" | "recoveryTriggers" | "notNow" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
+type View = "home" | "tasks" | "recovery" | "recoveryTriggers" | "notNow" | "sleepLog" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
 type TaskStatus = "todo" | "doing" | "done";
 type TaskPriority = "low" | "medium" | "high";
 type MoodStatus = "stable" | "uneasy" | "tired" | "slipping" | "recovering";
@@ -37,6 +38,10 @@ type MediaStatus = "want" | "progress" | "done";
 type RecoveryTriggerKind = "rest" | "regulate" | "distract" | "connect" | "record";
 type RecoveryTriggerEffect = "quick" | "slow" | "conditional";
 type NotNowStatus = "hold" | "ready";
+type SleepPlace = "futon" | "floor" | "chair" | "other";
+type SleepStyle = "natural" | "passedOut" | "lyingDown" | "dozing";
+type WakeFeeling = "clear" | "foggy" | "bodyPain" | "shaken";
+type FlashbackStatus = "yes" | "no" | "unknown";
 type Energy = "low" | "middle" | "high";
 type Mind = "calm" | "uneasy" | "overloaded";
 type Need = "rest" | "light" | "connect";
@@ -105,6 +110,18 @@ type NotNowEntry = {
   createdAt: string;
 };
 
+type SleepLogEntry = {
+  id: string;
+  date: string;
+  place: SleepPlace;
+  style: SleepStyle;
+  duration: string;
+  wakeFeeling: WakeFeeling;
+  flashback: FlashbackStatus;
+  memo: string;
+  createdAt: string;
+};
+
 type ShoppingItem = {
   id: string;
   name: string;
@@ -151,6 +168,7 @@ const VISIT_MEMO_STORAGE_KEY = "visit-nursing-medical-memo-v1";
 const MEDIA_LOG_STORAGE_KEY = "reading-movie-log-v1";
 const RECOVERY_TRIGGERS_STORAGE_KEY = "recovery-triggers-db-v1";
 const NOT_NOW_STORAGE_KEY = "not-now-list-v1";
+const SLEEP_LOG_STORAGE_KEY = "sleep-log-v1";
 
 const today = toDateInputValue(new Date());
 
@@ -169,6 +187,7 @@ menuItems.push({ view: "mediaLog", title: "読書・映画ログ", description: 
 
 menuItems.push({ view: "recoveryTriggers", title: "回復トリガーDB", description: "効いた回復行動と代替案をカードで保存", icon: Database });
 menuItems.push({ view: "notNow", title: "今はやらないリスト", description: "禁止ではなく、今は保留にして軽くする場所", icon: Coffee });
+menuItems.push({ view: "sleepLog", title: "睡眠ログ", description: "ちゃんと寝たかではなく、どう眠れたかを残す", icon: Moon });
 
 const moodOptions: Array<{ value: MoodStatus; label: string }> = [
   { value: "stable", label: "安定" },
@@ -199,6 +218,29 @@ const recoveryTriggerEffectLabel: Record<RecoveryTriggerEffect, string> = {
 const notNowStatusLabel: Record<NotNowStatus, string> = {
   hold: "保留",
   ready: "再開OK",
+};
+const sleepPlaceLabel: Record<SleepPlace, string> = {
+  futon: "布団",
+  floor: "床",
+  chair: "座椅子",
+  other: "その他",
+};
+const sleepStyleLabel: Record<SleepStyle, string> = {
+  natural: "自然に寝た",
+  passedOut: "気絶みたいに寝た",
+  lyingDown: "横になって寝た",
+  dozing: "うとうと",
+};
+const wakeFeelingLabel: Record<WakeFeeling, string> = {
+  clear: "スッキリ",
+  foggy: "ぼんやり",
+  bodyPain: "体が痛い",
+  shaken: "動揺あり",
+};
+const flashbackLabel: Record<FlashbackStatus, string> = {
+  yes: "あり",
+  no: "なし",
+  unknown: "不明",
 };
 
 const signOptions: Array<{ id: SignId; label: string; guide: string }> = [
@@ -383,6 +425,7 @@ export function App() {
             {view === "recovery" && <RecoveryLogApp />}
             {view === "recoveryTriggers" && <RecoveryTriggersApp />}
             {view === "notNow" && <NotNowApp />}
+            {view === "sleepLog" && <SleepLogApp />}
             {view === "state" && <StateBranchUi />}
             {view === "signs" && <SignsCheckUi />}
             {view === "library" && <ComfortLibrary />}
@@ -1182,6 +1225,144 @@ function NotNowApp() {
                 <p>
                   <b>メモ</b>
                   {item.memo}
+                </p>
+              ) : null}
+            </article>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SleepLogApp() {
+  const [entries, setEntries] = useState<SleepLogEntry[]>(readStorage<SleepLogEntry[]>(SLEEP_LOG_STORAGE_KEY, []));
+  const [date, setDate] = useState(today);
+  const [place, setPlace] = useState<SleepPlace>("futon");
+  const [style, setStyle] = useState<SleepStyle>("natural");
+  const [duration, setDuration] = useState("");
+  const [wakeFeeling, setWakeFeeling] = useState<WakeFeeling>("foggy");
+  const [flashback, setFlashback] = useState<FlashbackStatus>("unknown");
+  const [memo, setMemo] = useState("");
+
+  useEffect(() => window.localStorage.setItem(SLEEP_LOG_STORAGE_KEY, JSON.stringify(entries)), [entries]);
+
+  const sortedEntries = useMemo(
+    () => [...entries].sort((a, b) => (b.date || b.createdAt).localeCompare(a.date || a.createdAt)),
+    [entries],
+  );
+
+  function addEntry(event: FormEvent) {
+    event.preventDefault();
+    setEntries((current) => [
+      {
+        id: createId("sleep-log"),
+        date,
+        place,
+        style,
+        duration: duration.trim(),
+        wakeFeeling,
+        flashback,
+        memo: memo.trim(),
+        createdAt: new Date().toISOString(),
+      },
+      ...current,
+    ]);
+    setDate(today);
+    setPlace("futon");
+    setStyle("natural");
+    setDuration("");
+    setWakeFeeling("foggy");
+    setFlashback("unknown");
+    setMemo("");
+  }
+
+  return (
+    <section className="panel sleep-log-panel">
+      <form className="sleep-log-form" onSubmit={addEntry}>
+        <label className="field">
+          <span>日付</span>
+          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+        </label>
+        <label className="field">
+          <span>寝た場所</span>
+          <select value={place} onChange={(event) => setPlace(event.target.value as SleepPlace)}>
+            <option value="futon">布団</option>
+            <option value="floor">床</option>
+            <option value="chair">座椅子</option>
+            <option value="other">その他</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>眠り方</span>
+          <select value={style} onChange={(event) => setStyle(event.target.value as SleepStyle)}>
+            <option value="natural">自然に寝た</option>
+            <option value="passedOut">気絶みたいに寝た</option>
+            <option value="lyingDown">横になって寝た</option>
+            <option value="dozing">うとうと</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>睡眠時間</span>
+          <input value={duration} onChange={(event) => setDuration(event.target.value)} placeholder="例: 5時間 / 90分くらい" />
+        </label>
+        <label className="field">
+          <span>起きた時の感じ</span>
+          <select value={wakeFeeling} onChange={(event) => setWakeFeeling(event.target.value as WakeFeeling)}>
+            <option value="clear">スッキリ</option>
+            <option value="foggy">ぼんやり</option>
+            <option value="bodyPain">体が痛い</option>
+            <option value="shaken">動揺あり</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>フラッシュバック</span>
+          <select value={flashback} onChange={(event) => setFlashback(event.target.value as FlashbackStatus)}>
+            <option value="yes">あり</option>
+            <option value="no">なし</option>
+            <option value="unknown">不明</option>
+          </select>
+        </label>
+        <div className="sleep-log-wide">
+          <TextArea label="メモ" value={memo} onChange={setMemo} />
+        </div>
+        <button className="primary-button full sleep-log-submit" type="submit">
+          <Plus size={18} />
+          追加
+        </button>
+      </form>
+
+      <div className="sleep-log-list">
+        {sortedEntries.length === 0 ? (
+          <Empty text="睡眠ログはまだありません。" />
+        ) : (
+          sortedEntries.map((entry) => (
+            <article className="sleep-log-card" key={entry.id}>
+              <div className="sleep-log-head">
+                <div>
+                  <span>どう眠れたか</span>
+                  <strong>{entry.date ? formatDate(entry.date) : "日付なし"}</strong>
+                </div>
+                <button className="icon-button danger" type="button" onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`${entry.date}の睡眠ログを削除`}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="sleep-log-tags">
+                <span>{sleepPlaceLabel[entry.place]}</span>
+                <span>{sleepStyleLabel[entry.style]}</span>
+                <span>{wakeFeelingLabel[entry.wakeFeeling]}</span>
+                <span>フラッシュバック: {flashbackLabel[entry.flashback]}</span>
+              </div>
+              {entry.duration ? (
+                <p>
+                  <b>睡眠時間</b>
+                  {entry.duration}
+                </p>
+              ) : null}
+              {entry.memo ? (
+                <p>
+                  <b>メモ</b>
+                  {entry.memo}
                 </p>
               ) : null}
             </article>

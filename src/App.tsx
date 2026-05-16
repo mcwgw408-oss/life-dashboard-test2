@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Coffee,
   Crown,
+  Database,
   Dumbbell,
   Film,
   HeartPulse,
@@ -21,17 +22,20 @@ import {
   ShoppingBasket,
   Shuffle,
   Sparkles,
+  Star,
   Trash2,
   Wheat,
 } from "lucide-react";
 import { CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
 
-type View = "home" | "tasks" | "recovery" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
+type View = "home" | "tasks" | "recovery" | "recoveryTriggers" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
 type TaskStatus = "todo" | "doing" | "done";
 type TaskPriority = "low" | "medium" | "high";
 type MoodStatus = "stable" | "uneasy" | "tired" | "slipping" | "recovering";
 type MediaKind = "book" | "movie";
 type MediaStatus = "want" | "progress" | "done";
+type RecoveryTriggerKind = "rest" | "regulate" | "distract" | "connect" | "record";
+type RecoveryTriggerEffect = "quick" | "slow" | "conditional";
 type Energy = "low" | "middle" | "high";
 type Mind = "calm" | "uneasy" | "overloaded";
 type Need = "rest" | "light" | "connect";
@@ -79,6 +83,17 @@ type MediaLogEntry = {
   createdAt: string;
 };
 
+type RecoveryTriggerEntry = {
+  id: string;
+  name: string;
+  kind: RecoveryTriggerKind;
+  effect: RecoveryTriggerEffect;
+  alternative: string;
+  memo: string;
+  favorite: boolean;
+  createdAt: string;
+};
+
 type ShoppingItem = {
   id: string;
   name: string;
@@ -123,6 +138,7 @@ const ROULETTE_HISTORY_STORAGE_KEY = "today-roulette-history-v1";
 const SHOPPING_STORAGE_KEY = "shopping-list-mobile-v1";
 const VISIT_MEMO_STORAGE_KEY = "visit-nursing-medical-memo-v1";
 const MEDIA_LOG_STORAGE_KEY = "reading-movie-log-v1";
+const RECOVERY_TRIGGERS_STORAGE_KEY = "recovery-triggers-db-v1";
 
 const today = toDateInputValue(new Date());
 
@@ -139,6 +155,8 @@ const menuItems: Array<{ view: Exclude<View, "home">; title: string; description
 menuItems.push({ view: "visitMemo", title: "訪看・診察メモ", description: "毎日の記録をコピー用に整える", icon: NotebookPen });
 menuItems.push({ view: "mediaLog", title: "読書・映画ログ", description: "本と映画の記録、感想、もう一度度を残す", icon: Film });
 
+menuItems.push({ view: "recoveryTriggers", title: "回復トリガーDB", description: "効いた回復行動と代替案をカードで保存", icon: Database });
+
 const moodOptions: Array<{ value: MoodStatus; label: string }> = [
   { value: "stable", label: "安定" },
   { value: "uneasy", label: "やや不安" },
@@ -152,6 +170,19 @@ const priorityLabel: Record<TaskPriority, string> = { low: "低", medium: "中",
 const statusLabel: Record<TaskStatus, string> = { todo: "未着手", doing: "進行中", done: "完了" };
 const mediaKindLabel: Record<MediaKind, string> = { book: "読書", movie: "映画" };
 const mediaStatusLabel: Record<MediaStatus, string> = { want: "見たい・読みたい", progress: "途中", done: "完了" };
+
+const recoveryTriggerKindLabel: Record<RecoveryTriggerKind, string> = {
+  rest: "休む",
+  regulate: "整える",
+  distract: "気をそらす",
+  connect: "つながる",
+  record: "記録する",
+};
+const recoveryTriggerEffectLabel: Record<RecoveryTriggerEffect, string> = {
+  quick: "すぐ効く",
+  slow: "じわじわ効く",
+  conditional: "条件つき",
+};
 
 const signOptions: Array<{ id: SignId; label: string; guide: string }> = [
   { id: "sleep", label: "眠りが浅い", guide: "寝る前の刺激を減らして、予定を詰めすぎない。" },
@@ -333,6 +364,7 @@ export function App() {
             </nav>
             {view === "tasks" && <TaskManager />}
             {view === "recovery" && <RecoveryLogApp />}
+            {view === "recoveryTriggers" && <RecoveryTriggersApp />}
             {view === "state" && <StateBranchUi />}
             {view === "signs" && <SignsCheckUi />}
             {view === "library" && <ComfortLibrary />}
@@ -884,6 +916,135 @@ function MediaLogApp() {
   );
 }
 
+function RecoveryTriggersApp() {
+  const [triggers, setTriggers] = useState<RecoveryTriggerEntry[]>(readStorage<RecoveryTriggerEntry[]>(RECOVERY_TRIGGERS_STORAGE_KEY, []));
+  const [name, setName] = useState("");
+  const [kind, setKind] = useState<RecoveryTriggerKind>("rest");
+  const [effect, setEffect] = useState<RecoveryTriggerEffect>("quick");
+  const [alternative, setAlternative] = useState("");
+  const [memo, setMemo] = useState("");
+  const [favorite, setFavorite] = useState(false);
+
+  useEffect(() => window.localStorage.setItem(RECOVERY_TRIGGERS_STORAGE_KEY, JSON.stringify(triggers)), [triggers]);
+
+  const sortedTriggers = useMemo(
+    () => [...triggers].sort((a, b) => Number(b.favorite) - Number(a.favorite) || b.createdAt.localeCompare(a.createdAt)),
+    [triggers],
+  );
+
+  function addTrigger(event: FormEvent) {
+    event.preventDefault();
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+    setTriggers((current) => [
+      {
+        id: createId("recovery-trigger"),
+        name: trimmedName,
+        kind,
+        effect,
+        alternative: alternative.trim(),
+        memo: memo.trim(),
+        favorite,
+        createdAt: new Date().toISOString(),
+      },
+      ...current,
+    ]);
+    setName("");
+    setKind("rest");
+    setEffect("quick");
+    setAlternative("");
+    setMemo("");
+    setFavorite(false);
+  }
+
+  function toggleFavorite(id: string) {
+    setTriggers((current) => current.map((trigger) => (trigger.id === id ? { ...trigger, favorite: !trigger.favorite } : trigger)));
+  }
+
+  return (
+    <section className="panel recovery-trigger-panel">
+      <form className="recovery-trigger-form" onSubmit={addTrigger}>
+        <label className="field recovery-trigger-name">
+          <span>トリガー名</span>
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="例: 10分だけ横になる" />
+        </label>
+        <label className="field">
+          <span>種類</span>
+          <select value={kind} onChange={(event) => setKind(event.target.value as RecoveryTriggerKind)}>
+            <option value="rest">休む</option>
+            <option value="regulate">整える</option>
+            <option value="distract">気をそらす</option>
+            <option value="connect">つながる</option>
+            <option value="record">記録する</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>効き方</span>
+          <select value={effect} onChange={(event) => setEffect(event.target.value as RecoveryTriggerEffect)}>
+            <option value="quick">すぐ効く</option>
+            <option value="slow">じわじわ効く</option>
+            <option value="conditional">条件つき</option>
+          </select>
+        </label>
+        <label className="field recovery-trigger-wide">
+          <span>効かなかったときの代替案</span>
+          <input value={alternative} onChange={(event) => setAlternative(event.target.value)} placeholder="例: 照明を落として水を飲む" />
+        </label>
+        <div className="recovery-trigger-wide">
+          <TextArea label="メモ" value={memo} onChange={setMemo} />
+        </div>
+        <label className="favorite-check">
+          <input type="checkbox" checked={favorite} onChange={(event) => setFavorite(event.target.checked)} />
+          <span>お気に入り</span>
+        </label>
+        <button className="primary-button full recovery-trigger-submit" type="submit">
+          <Plus size={18} />
+          追加
+        </button>
+      </form>
+
+      <div className="recovery-trigger-list">
+        {sortedTriggers.length === 0 ? (
+          <Empty text="回復トリガーはまだありません。" />
+        ) : (
+          sortedTriggers.map((trigger) => (
+            <article className="recovery-trigger-card" key={trigger.id}>
+              <div className="recovery-trigger-head">
+                <button className={trigger.favorite ? "tiny active" : "tiny"} type="button" onClick={() => toggleFavorite(trigger.id)} aria-label="お気に入り">
+                  <Star size={16} fill={trigger.favorite ? "currentColor" : "none"} />
+                </button>
+                <div>
+                  <strong>{trigger.name}</strong>
+                  <small>{new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" }).format(new Date(trigger.createdAt))}</small>
+                </div>
+                <button className="icon-button danger" type="button" onClick={() => setTriggers((current) => current.filter((item) => item.id !== trigger.id))} aria-label={`${trigger.name}を削除`}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="recovery-trigger-tags">
+                <span>{recoveryTriggerKindLabel[trigger.kind]}</span>
+                <span>{recoveryTriggerEffectLabel[trigger.effect]}</span>
+              </div>
+              {trigger.alternative ? (
+                <p>
+                  <b>代替案</b>
+                  {trigger.alternative}
+                </p>
+              ) : null}
+              {trigger.memo ? (
+                <p>
+                  <b>メモ</b>
+                  {trigger.memo}
+                </p>
+              ) : null}
+            </article>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
 function ShoppingListApp() {
   const [items, setItems] = useState<ShoppingItem[]>(loadShoppingItems);
   const [name, setName] = useState("");
@@ -1347,4 +1508,5 @@ function LogCard({ log, onDelete }: { log: RecoveryLog; onDelete: () => void }) 
 function Empty({ text }: { text: string }) {
   return <p className="empty-state">{text}</p>;
 }
+
 export default App;

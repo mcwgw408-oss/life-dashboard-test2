@@ -1,0 +1,1256 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Life Dashboard API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: home
+    description: Home tab data
+  - name: daily
+    description: Daily tab data
+  - name: work
+    description: Work tab data
+  - name: consulting
+    description: Consulting tab data
+  - name: money
+    description: Money tab data
+  - name: health
+    description: Health tab data
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # HOME
+  /home/todos:
+    get:
+      operationId: getTodos
+      tags: [home]
+      summary: Get today's todos
+      responses:
+        "200":
+          description: List of todos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+    post:
+      operationId: createTodo
+      tags: [home]
+      summary: Create a todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTodoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+
+  /home/todos/{id}:
+    patch:
+      operationId: updateTodo
+      tags: [home]
+      summary: Update a todo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTodoInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+    delete:
+      operationId: deleteTodo
+      tags: [home]
+      summary: Delete a todo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /home/priorities:
+    get:
+      operationId: getPriorities
+      tags: [home]
+      summary: Get top 3 priorities
+      responses:
+        "200":
+          description: List of priorities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Priority"
+    post:
+      operationId: createPriority
+      tags: [home]
+      summary: Create a priority
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePriorityInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Priority"
+
+  /home/priorities/{id}:
+    patch:
+      operationId: updatePriority
+      tags: [home]
+      summary: Update a priority
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePriorityInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Priority"
+    delete:
+      operationId: deletePriority
+      tags: [home]
+      summary: Delete a priority
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /home/condition:
+    get:
+      operationId: getCondition
+      tags: [home]
+      summary: Get today's condition
+      responses:
+        "200":
+          description: Condition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Condition"
+    put:
+      operationId: upsertCondition
+      tags: [home]
+      summary: Set today's condition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertConditionInput"
+      responses:
+        "200":
+          description: Updated condition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Condition"
+
+  /home/memo:
+    get:
+      operationId: getHomeMemo
+      tags: [home]
+      summary: Get home memo
+      responses:
+        "200":
+          description: Memo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memo"
+    put:
+      operationId: upsertHomeMemo
+      tags: [home]
+      summary: Upsert home memo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertMemoInput"
+      responses:
+        "200":
+          description: Memo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memo"
+
+  # DAILY
+  /daily/memo:
+    get:
+      operationId: getDailyMemo
+      tags: [daily]
+      summary: Get daily memo
+      responses:
+        "200":
+          description: Memo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memo"
+    put:
+      operationId: upsertDailyMemo
+      tags: [daily]
+      summary: Upsert daily memo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertMemoInput"
+      responses:
+        "200":
+          description: Memo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memo"
+
+  /daily/shopping:
+    get:
+      operationId: getShoppingItems
+      tags: [daily]
+      summary: Get shopping list
+      responses:
+        "200":
+          description: Shopping items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShoppingItem"
+    post:
+      operationId: createShoppingItem
+      tags: [daily]
+      summary: Create shopping item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateShoppingItemInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShoppingItem"
+
+  /daily/shopping/{id}:
+    patch:
+      operationId: updateShoppingItem
+      tags: [daily]
+      summary: Update shopping item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateShoppingItemInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShoppingItem"
+    delete:
+      operationId: deleteShoppingItem
+      tags: [daily]
+      summary: Delete shopping item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # WORK
+  /work/notes:
+    get:
+      operationId: getWorkNotes
+      tags: [work]
+      summary: Get work notes
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [idea, blog, content, memo]
+      responses:
+        "200":
+          description: Work notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkNote"
+    post:
+      operationId: createWorkNote
+      tags: [work]
+      summary: Create work note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorkNoteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkNote"
+
+  /work/notes/{id}:
+    patch:
+      operationId: updateWorkNote
+      tags: [work]
+      summary: Update work note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWorkNoteInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkNote"
+    delete:
+      operationId: deleteWorkNote
+      tags: [work]
+      summary: Delete work note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # CONSULTING
+  /consulting/clients:
+    get:
+      operationId: getClients
+      tags: [consulting]
+      summary: Get consulting clients
+      responses:
+        "200":
+          description: Clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [consulting]
+      summary: Create client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /consulting/clients/{id}:
+    patch:
+      operationId: updateClient
+      tags: [consulting]
+      summary: Update client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClientInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      operationId: deleteClient
+      tags: [consulting]
+      summary: Delete client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # MONEY
+  /money/records:
+    get:
+      operationId: getMoneyRecords
+      tags: [money]
+      summary: Get money records
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [income, expense]
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+            description: "YYYY-MM"
+      responses:
+        "200":
+          description: Money records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MoneyRecord"
+    post:
+      operationId: createMoneyRecord
+      tags: [money]
+      summary: Create money record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMoneyRecordInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoneyRecord"
+
+  /money/records/{id}:
+    patch:
+      operationId: updateMoneyRecord
+      tags: [money]
+      summary: Update money record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMoneyRecordInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoneyRecord"
+    delete:
+      operationId: deleteMoneyRecord
+      tags: [money]
+      summary: Delete money record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /money/fixed-costs:
+    get:
+      operationId: getFixedCosts
+      tags: [money]
+      summary: Get fixed costs
+      responses:
+        "200":
+          description: Fixed costs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FixedCost"
+    post:
+      operationId: createFixedCost
+      tags: [money]
+      summary: Create fixed cost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFixedCostInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FixedCost"
+
+  /money/fixed-costs/{id}:
+    patch:
+      operationId: updateFixedCost
+      tags: [money]
+      summary: Update fixed cost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFixedCostInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FixedCost"
+    delete:
+      operationId: deleteFixedCost
+      tags: [money]
+      summary: Delete fixed cost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /money/subscriptions:
+    get:
+      operationId: getSubscriptions
+      tags: [money]
+      summary: Get subscriptions
+      responses:
+        "200":
+          description: Subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subscription"
+    post:
+      operationId: createSubscription
+      tags: [money]
+      summary: Create subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubscriptionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
+  /money/subscriptions/{id}:
+    patch:
+      operationId: updateSubscription
+      tags: [money]
+      summary: Update subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubscriptionInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+    delete:
+      operationId: deleteSubscription
+      tags: [money]
+      summary: Delete subscription
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # HEALTH
+  /health/logs:
+    get:
+      operationId: getHealthLogs
+      tags: [health]
+      summary: Get health logs
+      parameters:
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            description: "YYYY-MM-DD, defaults to today"
+      responses:
+        "200":
+          description: Health log for the date
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthLog"
+    put:
+      operationId: upsertHealthLog
+      tags: [health]
+      summary: Upsert health log
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertHealthLogInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthLog"
+
+  /health/notes:
+    get:
+      operationId: getHealthNotes
+      tags: [health]
+      summary: Get health notes
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [visiting_nurse, doctor, counseling]
+      responses:
+        "200":
+          description: Health notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HealthNote"
+    post:
+      operationId: createHealthNote
+      tags: [health]
+      summary: Create health note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHealthNoteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthNote"
+
+  /health/notes/{id}:
+    patch:
+      operationId: updateHealthNote
+      tags: [health]
+      summary: Update health note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateHealthNoteInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthNote"
+    delete:
+      operationId: deleteHealthNote
+      tags: [health]
+      summary: Delete health note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Todo:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        done:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, text, done, createdAt]
+
+    CreateTodoInput:
+      type: object
+      properties:
+        text:
+          type: string
+      required: [text]
+
+    UpdateTodoInput:
+      type: object
+      properties:
+        text:
+          type: string
+        done:
+          type: boolean
+
+    Priority:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        rank:
+          type: integer
+      required: [id, text, rank]
+
+    CreatePriorityInput:
+      type: object
+      properties:
+        text:
+          type: string
+        rank:
+          type: integer
+      required: [text, rank]
+
+    UpdatePriorityInput:
+      type: object
+      properties:
+        text:
+          type: string
+        rank:
+          type: integer
+
+    Condition:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        level:
+          type: integer
+          description: "1-5 scale"
+        note:
+          type: string
+      required: [id, date, level]
+
+    UpsertConditionInput:
+      type: object
+      properties:
+        date:
+          type: string
+        level:
+          type: integer
+        note:
+          type: string
+      required: [date, level]
+
+    Memo:
+      type: object
+      properties:
+        id:
+          type: integer
+        key:
+          type: string
+        content:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, key, content, updatedAt]
+
+    UpsertMemoInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+
+    ShoppingItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        bought:
+          type: boolean
+      required: [id, text, bought]
+
+    CreateShoppingItemInput:
+      type: object
+      properties:
+        text:
+          type: string
+      required: [text]
+
+    UpdateShoppingItemInput:
+      type: object
+      properties:
+        text:
+          type: string
+        bought:
+          type: boolean
+
+    WorkNote:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+          enum: [idea, blog, content, memo]
+        content:
+          type: string
+        createdAt:
+          type: string
+      required: [id, category, content, createdAt]
+
+    CreateWorkNoteInput:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [idea, blog, content, memo]
+        content:
+          type: string
+      required: [category, content]
+
+    UpdateWorkNoteInput:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [idea, blog, content, memo]
+        content:
+          type: string
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        topic:
+          type: string
+        proposal:
+          type: string
+        nextAction:
+          type: string
+        feeMemo:
+          type: string
+        notes:
+          type: string
+        createdAt:
+          type: string
+      required: [id, name, createdAt]
+
+    CreateClientInput:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        topic:
+          type: string
+        proposal:
+          type: string
+        nextAction:
+          type: string
+        feeMemo:
+          type: string
+        notes:
+          type: string
+      required: [name]
+
+    UpdateClientInput:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        topic:
+          type: string
+        proposal:
+          type: string
+        nextAction:
+          type: string
+        feeMemo:
+          type: string
+        notes:
+          type: string
+
+    MoneyRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: integer
+        category:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+        createdAt:
+          type: string
+      required: [id, type, amount, date, createdAt]
+
+    CreateMoneyRecordInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: integer
+        category:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+      required: [type, amount, date]
+
+    UpdateMoneyRecordInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: integer
+        category:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+
+    FixedCost:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        amount:
+          type: integer
+        note:
+          type: string
+      required: [id, name, amount]
+
+    CreateFixedCostInput:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: integer
+        note:
+          type: string
+      required: [name, amount]
+
+    UpdateFixedCostInput:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: integer
+        note:
+          type: string
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        amount:
+          type: integer
+        billingCycle:
+          type: string
+        note:
+          type: string
+      required: [id, name, amount]
+
+    CreateSubscriptionInput:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: integer
+        billingCycle:
+          type: string
+        note:
+          type: string
+      required: [name, amount]
+
+    UpdateSubscriptionInput:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: integer
+        billingCycle:
+          type: string
+        note:
+          type: string
+
+    HealthLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        sleepHours:
+          type: number
+        sleepNote:
+          type: string
+        meals:
+          type: string
+        medication:
+          type: string
+        conditionMemo:
+          type: string
+      required: [id, date]
+
+    UpsertHealthLogInput:
+      type: object
+      properties:
+        date:
+          type: string
+        sleepHours:
+          type: number
+        sleepNote:
+          type: string
+        meals:
+          type: string
+        medication:
+          type: string
+        conditionMemo:
+          type: string
+      required: [date]
+
+    HealthNote:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+          enum: [visiting_nurse, doctor, counseling]
+        date:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+      required: [id, category, date, content, createdAt]
+
+    CreateHealthNoteInput:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [visiting_nurse, doctor, counseling]
+        date:
+          type: string
+        content:
+          type: string
+      required: [category, date, content]
+
+    UpdateHealthNoteInput:
+      type: object
+      properties:
+        category:
+          type: string
+          enum: [visiting_nurse, doctor, counseling]
+        date:
+          type: string
+        content:
+          type: string

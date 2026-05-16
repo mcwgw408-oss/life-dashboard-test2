@@ -1205,3 +1205,4 @@ function LogCard({ log, onDelete }: { log: RecoveryLog; onDelete: () => void }) 
 function Empty({ text }: { text: string }) {
   return <p className="empty-state">{text}</p>;
 }
+export default App;

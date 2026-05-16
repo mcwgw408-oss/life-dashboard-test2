@@ -8,14 +8,11 @@ import {
   ClipboardCheck,
   Coffee,
   Crown,
-  Database,
   Dumbbell,
-  Film,
   HeartPulse,
   Home,
   ListChecks,
   Milk,
-  Moon,
   NotebookPen,
   PackagePlus,
   Plus,
@@ -23,25 +20,15 @@ import {
   ShoppingBasket,
   Shuffle,
   Sparkles,
-  Star,
   Trash2,
   Wheat,
 } from "lucide-react";
 import { CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
 
-type View = "home" | "tasks" | "recovery" | "recoveryTriggers" | "notNow" | "sleepLog" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
+type View = "home" | "tasks" | "recovery" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo";
 type TaskStatus = "todo" | "doing" | "done";
 type TaskPriority = "low" | "medium" | "high";
 type MoodStatus = "stable" | "uneasy" | "tired" | "slipping" | "recovering";
-type MediaKind = "book" | "movie";
-type MediaStatus = "want" | "progress" | "done";
-type RecoveryTriggerKind = "rest" | "regulate" | "distract" | "connect" | "record";
-type RecoveryTriggerEffect = "quick" | "slow" | "conditional";
-type NotNowStatus = "hold" | "ready";
-type SleepPlace = "futon" | "floor" | "chair" | "other";
-type SleepStyle = "natural" | "passedOut" | "lyingDown" | "dozing";
-type WakeFeeling = "clear" | "foggy" | "bodyPain" | "shaken";
-type FlashbackStatus = "yes" | "no" | "unknown";
 type Energy = "low" | "middle" | "high";
 type Mind = "calm" | "uneasy" | "overloaded";
 type Need = "rest" | "light" | "connect";
@@ -76,51 +63,6 @@ type SignCheck = { id: string; date: string; checked: SignId[]; note: string; cr
 type LibraryEntry = { id: string; title: string; body: string; tag: string; custom?: boolean };
 type RouletteAction = { id: string; text: string; category: string; favorite?: boolean; custom?: boolean };
 type RouletteHistory = { id: string; text: string; status: "drawn" | "done" | "skipped"; createdAt: string };
-
-type MediaLogEntry = {
-  id: string;
-  kind: MediaKind;
-  title: string;
-  creator: string;
-  date: string;
-  status: MediaStatus;
-  memo: string;
-  rating: number;
-  createdAt: string;
-};
-
-type RecoveryTriggerEntry = {
-  id: string;
-  name: string;
-  kind: RecoveryTriggerKind;
-  effect: RecoveryTriggerEffect;
-  alternative: string;
-  memo: string;
-  favorite: boolean;
-  createdAt: string;
-};
-
-type NotNowEntry = {
-  id: string;
-  title: string;
-  reason: string;
-  alternative: string;
-  status: NotNowStatus;
-  memo: string;
-  createdAt: string;
-};
-
-type SleepLogEntry = {
-  id: string;
-  date: string;
-  place: SleepPlace;
-  style: SleepStyle;
-  duration: string;
-  wakeFeeling: WakeFeeling;
-  flashback: FlashbackStatus;
-  memo: string;
-  createdAt: string;
-};
 
 type ShoppingItem = {
   id: string;
@@ -165,11 +107,6 @@ const ROULETTE_ACTIONS_STORAGE_KEY = "today-roulette-actions-v1";
 const ROULETTE_HISTORY_STORAGE_KEY = "today-roulette-history-v1";
 const SHOPPING_STORAGE_KEY = "shopping-list-mobile-v1";
 const VISIT_MEMO_STORAGE_KEY = "visit-nursing-medical-memo-v1";
-const MEDIA_LOG_STORAGE_KEY = "reading-movie-log-v1";
-const RECOVERY_TRIGGERS_STORAGE_KEY = "recovery-triggers-db-v1";
-const NOT_NOW_STORAGE_KEY = "not-now-list-v1";
-const SLEEP_LOG_STORAGE_KEY = "sleep-log-v1";
-
 const today = toDateInputValue(new Date());
 
 const menuItems: Array<{ view: Exclude<View, "home">; title: string; description: string; icon: typeof Home }> = [
@@ -183,11 +120,6 @@ const menuItems: Array<{ view: Exclude<View, "home">; title: string; description
 ];
 
 menuItems.push({ view: "visitMemo", title: "訪看・診察メモ", description: "毎日の記録をコピー用に整える", icon: NotebookPen });
-menuItems.push({ view: "mediaLog", title: "読書・映画ログ", description: "本と映画の記録、感想、もう一度度を残す", icon: Film });
-
-menuItems.push({ view: "recoveryTriggers", title: "回復トリガーDB", description: "効いた回復行動と代替案をカードで保存", icon: Database });
-menuItems.push({ view: "notNow", title: "今はやらないリスト", description: "禁止ではなく、今は保留にして軽くする場所", icon: Coffee });
-menuItems.push({ view: "sleepLog", title: "睡眠ログ", description: "ちゃんと寝たかではなく、どう眠れたかを残す", icon: Moon });
 
 const moodOptions: Array<{ value: MoodStatus; label: string }> = [
   { value: "stable", label: "安定" },
@@ -200,49 +132,6 @@ const moodOptions: Array<{ value: MoodStatus; label: string }> = [
 const moodLabel = Object.fromEntries(moodOptions.map((item) => [item.value, item.label])) as Record<MoodStatus, string>;
 const priorityLabel: Record<TaskPriority, string> = { low: "低", medium: "中", high: "高" };
 const statusLabel: Record<TaskStatus, string> = { todo: "未着手", doing: "進行中", done: "完了" };
-const mediaKindLabel: Record<MediaKind, string> = { book: "読書", movie: "映画" };
-const mediaStatusLabel: Record<MediaStatus, string> = { want: "見たい・読みたい", progress: "途中", done: "完了" };
-
-const recoveryTriggerKindLabel: Record<RecoveryTriggerKind, string> = {
-  rest: "休む",
-  regulate: "整える",
-  distract: "気をそらす",
-  connect: "つながる",
-  record: "記録する",
-};
-const recoveryTriggerEffectLabel: Record<RecoveryTriggerEffect, string> = {
-  quick: "すぐ効く",
-  slow: "じわじわ効く",
-  conditional: "条件つき",
-};
-const notNowStatusLabel: Record<NotNowStatus, string> = {
-  hold: "保留",
-  ready: "再開OK",
-};
-const sleepPlaceLabel: Record<SleepPlace, string> = {
-  futon: "布団",
-  floor: "床",
-  chair: "座椅子",
-  other: "その他",
-};
-const sleepStyleLabel: Record<SleepStyle, string> = {
-  natural: "自然に寝た",
-  passedOut: "気絶みたいに寝た",
-  lyingDown: "横になって寝た",
-  dozing: "うとうと",
-};
-const wakeFeelingLabel: Record<WakeFeeling, string> = {
-  clear: "スッキリ",
-  foggy: "ぼんやり",
-  bodyPain: "体が痛い",
-  shaken: "動揺あり",
-};
-const flashbackLabel: Record<FlashbackStatus, string> = {
-  yes: "あり",
-  no: "なし",
-  unknown: "不明",
-};
-
 const signOptions: Array<{ id: SignId; label: string; guide: string }> = [
   { id: "sleep", label: "眠りが浅い", guide: "寝る前の刺激を減らして、予定を詰めすぎない。" },
   { id: "body", label: "体が重い", guide: "水分、食事、横になる時間を先に確保する。" },
@@ -423,16 +312,12 @@ export function App() {
             </nav>
             {view === "tasks" && <TaskManager />}
             {view === "recovery" && <RecoveryLogApp />}
-            {view === "recoveryTriggers" && <RecoveryTriggersApp />}
-            {view === "notNow" && <NotNowApp />}
-            {view === "sleepLog" && <SleepLogApp />}
             {view === "state" && <StateBranchUi />}
             {view === "signs" && <SignsCheckUi />}
             {view === "library" && <ComfortLibrary />}
             {view === "roulette" && <RouletteApp />}
             {view === "shopping" && <ShoppingListApp />}
             {view === "visitMemo" && <VisitMemoApp />}
-            {view === "mediaLog" && <MediaLogApp />}
           </>
         )}
       </section>
@@ -850,524 +735,6 @@ function RouletteApp() {
           </article>
         ))}
         {history.length > 0 ? <div className="history-line">最新: {history[0].text} ({formatTime(history[0].createdAt)})</div> : null}
-      </div>
-    </section>
-  );
-}
-
-function MediaLogApp() {
-  const [entries, setEntries] = useState<MediaLogEntry[]>(readStorage<MediaLogEntry[]>(MEDIA_LOG_STORAGE_KEY, []));
-  const [kind, setKind] = useState<MediaKind>("book");
-  const [title, setTitle] = useState("");
-  const [creator, setCreator] = useState("");
-  const [date, setDate] = useState(today);
-  const [status, setStatus] = useState<MediaStatus>("want");
-  const [memo, setMemo] = useState("");
-  const [rating, setRating] = useState(3);
-
-  useEffect(() => window.localStorage.setItem(MEDIA_LOG_STORAGE_KEY, JSON.stringify(entries)), [entries]);
-
-  const sortedEntries = useMemo(
-    () => [...entries].sort((a, b) => (b.date || b.createdAt).localeCompare(a.date || a.createdAt)),
-    [entries],
-  );
-
-  function addEntry(event: FormEvent) {
-    event.preventDefault();
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) return;
-    setEntries((current) => [
-      {
-        id: createId("media-log"),
-        kind,
-        title: trimmedTitle,
-        creator: creator.trim(),
-        date,
-        status,
-        memo: memo.trim(),
-        rating,
-        createdAt: new Date().toISOString(),
-      },
-      ...current,
-    ]);
-    setTitle("");
-    setCreator("");
-    setDate(today);
-    setStatus("want");
-    setMemo("");
-    setRating(3);
-  }
-
-  return (
-    <section className="panel media-log-panel">
-      <form className="media-form" onSubmit={addEntry}>
-        <label className="field">
-          <span>種類</span>
-          <select value={kind} onChange={(event) => setKind(event.target.value as MediaKind)}>
-            <option value="book">読書</option>
-            <option value="movie">映画</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>タイトル</span>
-          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="作品名" />
-        </label>
-        <label className="field">
-          <span>作者・監督</span>
-          <input value={creator} onChange={(event) => setCreator(event.target.value)} placeholder="任意" />
-        </label>
-        <label className="field">
-          <span>日付</span>
-          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-        </label>
-        <label className="field">
-          <span>状態</span>
-          <select value={status} onChange={(event) => setStatus(event.target.value as MediaStatus)}>
-            <option value="want">見たい・読みたい</option>
-            <option value="progress">途中</option>
-            <option value="done">完了</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>もう一度見たい・読みたい度</span>
-          <select value={rating} onChange={(event) => setRating(Number(event.target.value))}>
-            {[1, 2, 3, 4, 5].map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="media-memo-field">
-          <TextArea label="感想メモ" value={memo} onChange={setMemo} />
-        </div>
-        <button className="primary-button full" type="submit">
-          <Plus size={18} />
-          追加
-        </button>
-      </form>
-
-      <div className="media-log-list">
-        {sortedEntries.length === 0 ? (
-          <Empty text="読書・映画ログはまだありません。" />
-        ) : (
-          sortedEntries.map((entry) => (
-            <article className="media-card" key={entry.id}>
-              <div className="media-card-head">
-                <span className={entry.kind === "book" ? "media-kind book" : "media-kind movie"}>{mediaKindLabel[entry.kind]}</span>
-                <button className="icon-button danger" type="button" onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`${entry.title}を削除`}>
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              <div className="media-card-body">
-                <strong>{entry.title}</strong>
-                {entry.creator ? <small>{entry.creator}</small> : null}
-              </div>
-              <div className="media-meta">
-                <span>{entry.date ? formatDate(entry.date) : "日付なし"}</span>
-                <span>{mediaStatusLabel[entry.status]}</span>
-                <span>{"★".repeat(entry.rating)}{"☆".repeat(5 - entry.rating)}</span>
-              </div>
-              {entry.memo ? <p>{entry.memo}</p> : null}
-            </article>
-          ))
-        )}
-      </div>
-    </section>
-  );
-}
-
-function RecoveryTriggersApp() {
-  const [triggers, setTriggers] = useState<RecoveryTriggerEntry[]>(readStorage<RecoveryTriggerEntry[]>(RECOVERY_TRIGGERS_STORAGE_KEY, []));
-  const [name, setName] = useState("");
-  const [kind, setKind] = useState<RecoveryTriggerKind>("rest");
-  const [effect, setEffect] = useState<RecoveryTriggerEffect>("quick");
-  const [alternative, setAlternative] = useState("");
-  const [memo, setMemo] = useState("");
-  const [favorite, setFavorite] = useState(false);
-
-  useEffect(() => window.localStorage.setItem(RECOVERY_TRIGGERS_STORAGE_KEY, JSON.stringify(triggers)), [triggers]);
-
-  const sortedTriggers = useMemo(
-    () => [...triggers].sort((a, b) => Number(b.favorite) - Number(a.favorite) || b.createdAt.localeCompare(a.createdAt)),
-    [triggers],
-  );
-
-  function addTrigger(event: FormEvent) {
-    event.preventDefault();
-    const trimmedName = name.trim();
-    if (!trimmedName) return;
-    setTriggers((current) => [
-      {
-        id: createId("recovery-trigger"),
-        name: trimmedName,
-        kind,
-        effect,
-        alternative: alternative.trim(),
-        memo: memo.trim(),
-        favorite,
-        createdAt: new Date().toISOString(),
-      },
-      ...current,
-    ]);
-    setName("");
-    setKind("rest");
-    setEffect("quick");
-    setAlternative("");
-    setMemo("");
-    setFavorite(false);
-  }
-
-  function toggleFavorite(id: string) {
-    setTriggers((current) => current.map((trigger) => (trigger.id === id ? { ...trigger, favorite: !trigger.favorite } : trigger)));
-  }
-
-  return (
-    <section className="panel recovery-trigger-panel">
-      <form className="recovery-trigger-form" onSubmit={addTrigger}>
-        <label className="field recovery-trigger-name">
-          <span>トリガー名</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="例: 10分だけ横になる" />
-        </label>
-        <label className="field">
-          <span>種類</span>
-          <select value={kind} onChange={(event) => setKind(event.target.value as RecoveryTriggerKind)}>
-            <option value="rest">休む</option>
-            <option value="regulate">整える</option>
-            <option value="distract">気をそらす</option>
-            <option value="connect">つながる</option>
-            <option value="record">記録する</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>効き方</span>
-          <select value={effect} onChange={(event) => setEffect(event.target.value as RecoveryTriggerEffect)}>
-            <option value="quick">すぐ効く</option>
-            <option value="slow">じわじわ効く</option>
-            <option value="conditional">条件つき</option>
-          </select>
-        </label>
-        <label className="field recovery-trigger-wide">
-          <span>効かなかったときの代替案</span>
-          <input value={alternative} onChange={(event) => setAlternative(event.target.value)} placeholder="例: 照明を落として水を飲む" />
-        </label>
-        <div className="recovery-trigger-wide">
-          <TextArea label="メモ" value={memo} onChange={setMemo} />
-        </div>
-        <label
-          className="favorite-check"
-          style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 42 }}
-        >
-          <input
-            type="checkbox"
-            checked={favorite}
-            onChange={(event) => setFavorite(event.target.checked)}
-            style={{ width: 20, height: 20, flex: "0 0 auto", margin: 0 }}
-          />
-          <span style={{ display: "inline", color: "#25322c", fontWeight: 850, whiteSpace: "nowrap" }}>お気に入り</span>
-        </label>
-        <button className="primary-button full recovery-trigger-submit" type="submit">
-          <Plus size={18} />
-          追加
-        </button>
-      </form>
-
-      <div className="recovery-trigger-list">
-        {sortedTriggers.length === 0 ? (
-          <Empty text="回復トリガーはまだありません。" />
-        ) : (
-          sortedTriggers.map((trigger) => (
-            <article className="recovery-trigger-card" key={trigger.id}>
-              <div className="recovery-trigger-head">
-                <button className={trigger.favorite ? "tiny active" : "tiny"} type="button" onClick={() => toggleFavorite(trigger.id)} aria-label="お気に入り">
-                  <Star size={16} fill={trigger.favorite ? "currentColor" : "none"} />
-                </button>
-                <div>
-                  <strong>{trigger.name}</strong>
-                  <small>{new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" }).format(new Date(trigger.createdAt))}</small>
-                </div>
-                <button className="icon-button danger" type="button" onClick={() => setTriggers((current) => current.filter((item) => item.id !== trigger.id))} aria-label={`${trigger.name}を削除`}>
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              <div className="recovery-trigger-tags">
-                <span>{recoveryTriggerKindLabel[trigger.kind]}</span>
-                <span>{recoveryTriggerEffectLabel[trigger.effect]}</span>
-              </div>
-              {trigger.alternative ? (
-                <p>
-                  <b>代替案</b>
-                  {trigger.alternative}
-                </p>
-              ) : null}
-              {trigger.memo ? (
-                <p>
-                  <b>メモ</b>
-                  {trigger.memo}
-                </p>
-              ) : null}
-            </article>
-          ))
-        )}
-      </div>
-    </section>
-  );
-}
-
-function NotNowApp() {
-  const [items, setItems] = useState<NotNowEntry[]>(readStorage<NotNowEntry[]>(NOT_NOW_STORAGE_KEY, []));
-  const [title, setTitle] = useState("");
-  const [reason, setReason] = useState("");
-  const [alternative, setAlternative] = useState("");
-  const [status, setStatus] = useState<NotNowStatus>("hold");
-  const [memo, setMemo] = useState("");
-
-  useEffect(() => window.localStorage.setItem(NOT_NOW_STORAGE_KEY, JSON.stringify(items)), [items]);
-
-  const sortedItems = useMemo(
-    () => [...items].sort((a, b) => (a.status === b.status ? b.createdAt.localeCompare(a.createdAt) : a.status === "hold" ? -1 : 1)),
-    [items],
-  );
-
-  function addItem(event: FormEvent) {
-    event.preventDefault();
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) return;
-    setItems((current) => [
-      {
-        id: createId("not-now"),
-        title: trimmedTitle,
-        reason: reason.trim(),
-        alternative: alternative.trim(),
-        status,
-        memo: memo.trim(),
-        createdAt: new Date().toISOString(),
-      },
-      ...current,
-    ]);
-    setTitle("");
-    setReason("");
-    setAlternative("");
-    setStatus("hold");
-    setMemo("");
-  }
-
-  function updateItem(id: string, patch: Partial<NotNowEntry>) {
-    setItems((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
-  }
-
-  return (
-    <section className="panel not-now-panel">
-      <form className="not-now-form" onSubmit={addItem}>
-        <label className="field not-now-wide">
-          <span>今はやらないこと</span>
-          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="例: 夜に大きな片付けを始める" />
-        </label>
-        <label className="field">
-          <span>状態</span>
-          <select value={status} onChange={(event) => setStatus(event.target.value as NotNowStatus)}>
-            <option value="hold">保留</option>
-            <option value="ready">再開OK</option>
-          </select>
-        </label>
-        <label className="field not-now-wide">
-          <span>理由</span>
-          <input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="例: 疲れていると広げすぎやすい" />
-        </label>
-        <label className="field not-now-wide">
-          <span>今は代わりにどうするか</span>
-          <input value={alternative} onChange={(event) => setAlternative(event.target.value)} placeholder="例: 机の上だけ1つ片付ける" />
-        </label>
-        <div className="not-now-wide">
-          <TextArea label="メモ" value={memo} onChange={setMemo} />
-        </div>
-        <button className="primary-button full not-now-submit" type="submit">
-          <Plus size={18} />
-          追加
-        </button>
-      </form>
-
-      <div className="not-now-list">
-        {sortedItems.length === 0 ? (
-          <Empty text="今はやらないことはまだありません。" />
-        ) : (
-          sortedItems.map((item) => (
-            <article className={item.status === "ready" ? "not-now-card ready" : "not-now-card"} key={item.id}>
-              <div className="not-now-head">
-                <div>
-                  <span className="not-now-kicker">今は保留</span>
-                  <strong>{item.title}</strong>
-                </div>
-                <button className="icon-button danger" type="button" onClick={() => setItems((current) => current.filter((currentItem) => currentItem.id !== item.id))} aria-label={`${item.title}を削除`}>
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              <div className="not-now-status-row">
-                {(["hold", "ready"] as const).map((statusValue) => (
-                  <button key={statusValue} className={item.status === statusValue ? "active" : ""} type="button" onClick={() => updateItem(item.id, { status: statusValue })}>
-                    {notNowStatusLabel[statusValue]}
-                  </button>
-                ))}
-              </div>
-              {item.reason ? (
-                <p>
-                  <b>理由</b>
-                  {item.reason}
-                </p>
-              ) : null}
-              {item.alternative ? (
-                <p>
-                  <b>今は代わりに</b>
-                  {item.alternative}
-                </p>
-              ) : null}
-              {item.memo ? (
-                <p>
-                  <b>メモ</b>
-                  {item.memo}
-                </p>
-              ) : null}
-            </article>
-          ))
-        )}
-      </div>
-    </section>
-  );
-}
-
-function SleepLogApp() {
-  const [entries, setEntries] = useState<SleepLogEntry[]>(readStorage<SleepLogEntry[]>(SLEEP_LOG_STORAGE_KEY, []));
-  const [date, setDate] = useState(today);
-  const [place, setPlace] = useState<SleepPlace>("futon");
-  const [style, setStyle] = useState<SleepStyle>("natural");
-  const [duration, setDuration] = useState("");
-  const [wakeFeeling, setWakeFeeling] = useState<WakeFeeling>("foggy");
-  const [flashback, setFlashback] = useState<FlashbackStatus>("unknown");
-  const [memo, setMemo] = useState("");
-
-  useEffect(() => window.localStorage.setItem(SLEEP_LOG_STORAGE_KEY, JSON.stringify(entries)), [entries]);
-
-  const sortedEntries = useMemo(
-    () => [...entries].sort((a, b) => (b.date || b.createdAt).localeCompare(a.date || a.createdAt)),
-    [entries],
-  );
-
-  function addEntry(event: FormEvent) {
-    event.preventDefault();
-    setEntries((current) => [
-      {
-        id: createId("sleep-log"),
-        date,
-        place,
-        style,
-        duration: duration.trim(),
-        wakeFeeling,
-        flashback,
-        memo: memo.trim(),
-        createdAt: new Date().toISOString(),
-      },
-      ...current,
-    ]);
-    setDate(today);
-    setPlace("futon");
-    setStyle("natural");
-    setDuration("");
-    setWakeFeeling("foggy");
-    setFlashback("unknown");
-    setMemo("");
-  }
-
-  return (
-    <section className="panel sleep-log-panel">
-      <form className="sleep-log-form" onSubmit={addEntry}>
-        <label className="field">
-          <span>日付</span>
-          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-        </label>
-        <label className="field">
-          <span>寝た場所</span>
-          <select value={place} onChange={(event) => setPlace(event.target.value as SleepPlace)}>
-            <option value="futon">布団</option>
-            <option value="floor">床</option>
-            <option value="chair">座椅子</option>
-            <option value="other">その他</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>眠り方</span>
-          <select value={style} onChange={(event) => setStyle(event.target.value as SleepStyle)}>
-            <option value="natural">自然に寝た</option>
-            <option value="passedOut">気絶みたいに寝た</option>
-            <option value="lyingDown">横になって寝た</option>
-            <option value="dozing">うとうと</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>睡眠時間</span>
-          <input value={duration} onChange={(event) => setDuration(event.target.value)} placeholder="例: 5時間 / 90分くらい" />
-        </label>
-        <label className="field">
-          <span>起きた時の感じ</span>
-          <select value={wakeFeeling} onChange={(event) => setWakeFeeling(event.target.value as WakeFeeling)}>
-            <option value="clear">スッキリ</option>
-            <option value="foggy">ぼんやり</option>
-            <option value="bodyPain">体が痛い</option>
-            <option value="shaken">動揺あり</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>フラッシュバック</span>
-          <select value={flashback} onChange={(event) => setFlashback(event.target.value as FlashbackStatus)}>
-            <option value="yes">あり</option>
-            <option value="no">なし</option>
-            <option value="unknown">不明</option>
-          </select>
-        </label>
-        <div className="sleep-log-wide">
-          <TextArea label="メモ" value={memo} onChange={setMemo} />
-        </div>
-        <button className="primary-button full sleep-log-submit" type="submit">
-          <Plus size={18} />
-          追加
-        </button>
-      </form>
-
-      <div className="sleep-log-list">
-        {sortedEntries.length === 0 ? (
-          <Empty text="睡眠ログはまだありません。" />
-        ) : (
-          sortedEntries.map((entry) => (
-            <article className="sleep-log-card" key={entry.id}>
-              <div className="sleep-log-head">
-                <div>
-                  <span>どう眠れたか</span>
-                  <strong>{entry.date ? formatDate(entry.date) : "日付なし"}</strong>
-                </div>
-                <button className="icon-button danger" type="button" onClick={() => setEntries((current) => current.filter((item) => item.id !== entry.id))} aria-label={`${entry.date}の睡眠ログを削除`}>
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              <div className="sleep-log-tags">
-                <span>{sleepPlaceLabel[entry.place]}</span>
-                <span>{sleepStyleLabel[entry.style]}</span>
-                <span>{wakeFeelingLabel[entry.wakeFeeling]}</span>
-                <span>フラッシュバック: {flashbackLabel[entry.flashback]}</span>
-              </div>
-              {entry.duration ? (
-                <p>
-                  <b>睡眠時間</b>
-                  {entry.duration}
-                </p>
-              ) : null}
-              {entry.memo ? (
-                <p>
-                  <b>メモ</b>
-                  {entry.memo}
-                </p>
-              ) : null}
-            </article>
-          ))
-        )}
       </div>
     </section>
   );

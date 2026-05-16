@@ -1474,3 +1474,342 @@ select:focus {
     min-height: 32px;
   }
 }
+
+/* Stronger screen-specific overrides for the three life-app views. */
+.app-shell .media-log-panel,
+.app-shell .recovery-trigger-panel,
+.app-shell .not-now-panel {
+  gap: 20px !important;
+  padding: 18px !important;
+  border: 1px solid rgba(63, 88, 74, 0.11) !important;
+  border-radius: 8px !important;
+  background: linear-gradient(180deg, rgba(255, 253, 247, 0.96), rgba(247, 250, 244, 0.9)) !important;
+}
+
+.app-shell .media-form,
+.app-shell .recovery-trigger-form,
+.app-shell .not-now-form {
+  display: grid !important;
+  gap: 14px !important;
+  padding: 18px !important;
+  border: 1px solid rgba(63, 88, 74, 0.12) !important;
+  border-radius: 8px !important;
+  background: #fffefa !important;
+  box-shadow: 0 10px 26px rgba(57, 75, 63, 0.06) !important;
+}
+
+.app-shell .media-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.app-shell .recovery-trigger-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.app-shell .not-now-form {
+  grid-template-columns: minmax(0, 1fr) 170px !important;
+}
+
+.app-shell .media-form .field,
+.app-shell .recovery-trigger-form .field,
+.app-shell .not-now-form .field,
+.app-shell .media-memo-field,
+.app-shell .recovery-trigger-wide,
+.app-shell .not-now-wide {
+  gap: 8px !important;
+}
+
+.app-shell .media-form .field span,
+.app-shell .recovery-trigger-form .field span,
+.app-shell .not-now-form .field span,
+.app-shell .media-memo-field .field span,
+.app-shell .recovery-trigger-wide .field span,
+.app-shell .not-now-wide .field span {
+  color: #66776e !important;
+  font-size: 0.82rem !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+}
+
+.app-shell .media-form input,
+.app-shell .media-form select,
+.app-shell .recovery-trigger-form input,
+.app-shell .recovery-trigger-form select,
+.app-shell .not-now-form input,
+.app-shell .not-now-form select {
+  min-height: 52px !important;
+  border-color: rgba(63, 88, 74, 0.18) !important;
+  border-radius: 8px !important;
+  padding: 0 14px !important;
+  background: #fffdf8 !important;
+  color: #26362e !important;
+}
+
+.app-shell .media-form textarea,
+.app-shell .recovery-trigger-form textarea,
+.app-shell .not-now-form textarea {
+  min-height: 112px !important;
+  border-color: rgba(63, 88, 74, 0.18) !important;
+  border-radius: 8px !important;
+  padding: 12px 14px !important;
+  background: #fffdf8 !important;
+  color: #26362e !important;
+  line-height: 1.65 !important;
+}
+
+.app-shell .media-form .primary-button,
+.app-shell .recovery-trigger-submit,
+.app-shell .not-now-submit {
+  min-height: 54px !important;
+  border-radius: 8px !important;
+  background: #4f7765 !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  box-shadow: 0 12px 24px rgba(62, 92, 77, 0.18) !important;
+}
+
+.app-shell .favorite-check {
+  min-height: 50px !important;
+  padding: 11px 13px !important;
+  border: 1px solid rgba(63, 88, 74, 0.13) !important;
+  border-radius: 8px !important;
+  background: #f5f8ef !important;
+}
+
+.app-shell .media-log-list,
+.app-shell .recovery-trigger-list,
+.app-shell .not-now-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.app-shell .media-card,
+.app-shell .recovery-trigger-card,
+.app-shell .not-now-card {
+  display: grid !important;
+  gap: 15px !important;
+  padding: 18px !important;
+  border: 1px solid rgba(63, 88, 74, 0.12) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 28px rgba(57, 75, 63, 0.08) !important;
+}
+
+.app-shell .media-card {
+  background: #fffef9 !important;
+}
+
+.app-shell .recovery-trigger-card {
+  background: #fbfff8 !important;
+}
+
+.app-shell .not-now-card {
+  border-color: rgba(126, 104, 66, 0.16) !important;
+  background: #fffaf0 !important;
+}
+
+.app-shell .not-now-card.ready {
+  border-color: rgba(79, 119, 101, 0.18) !important;
+  background: #f3faf3 !important;
+}
+
+.app-shell .media-card-head,
+.app-shell .recovery-trigger-head,
+.app-shell .not-now-head {
+  gap: 12px !important;
+  align-items: start !important;
+}
+
+.app-shell .recovery-trigger-head {
+  grid-template-columns: 44px minmax(0, 1fr) 44px !important;
+}
+
+.app-shell .not-now-head {
+  grid-template-columns: minmax(0, 1fr) 44px !important;
+}
+
+.app-shell .media-card-body {
+  gap: 6px !important;
+}
+
+.app-shell .media-card-body strong,
+.app-shell .recovery-trigger-head strong,
+.app-shell .not-now-head strong {
+  color: #29372f !important;
+  font-size: 1.12rem !important;
+  font-weight: 900 !important;
+  line-height: 1.45 !important;
+}
+
+.app-shell .media-card-body small,
+.app-shell .recovery-trigger-head small {
+  color: #758279 !important;
+  font-size: 0.86rem !important;
+  font-weight: 800 !important;
+  line-height: 1.45 !important;
+}
+
+.app-shell .media-kind,
+.app-shell .recovery-trigger-tags span,
+.app-shell .media-meta span,
+.app-shell .not-now-kicker {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  min-height: 32px !important;
+  border-radius: 999px !important;
+  padding: 7px 11px !important;
+  font-size: 0.8rem !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
+}
+
+.app-shell .media-kind.book {
+  background: #4f7765 !important;
+}
+
+.app-shell .media-kind.movie {
+  background: #697083 !important;
+}
+
+.app-shell .recovery-trigger-tags {
+  gap: 8px !important;
+}
+
+.app-shell .recovery-trigger-tags span {
+  color: #3f6555 !important;
+  background: #e8f4ec !important;
+}
+
+.app-shell .media-meta {
+  gap: 8px !important;
+}
+
+.app-shell .media-meta span {
+  color: #56675e !important;
+  background: #f1eee6 !important;
+}
+
+.app-shell .not-now-kicker {
+  color: #756752 !important;
+  background: #f0eadb !important;
+}
+
+.app-shell .not-now-card.ready .not-now-kicker {
+  color: #416858 !important;
+  background: #e2f0e7 !important;
+}
+
+.app-shell .media-card p,
+.app-shell .recovery-trigger-card p,
+.app-shell .not-now-card p {
+  display: grid !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  color: #52645b !important;
+  font-size: 0.95rem !important;
+  line-height: 1.75 !important;
+}
+
+.app-shell .recovery-trigger-card b,
+.app-shell .not-now-card b {
+  color: #76847b !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+}
+
+.app-shell .media-card .icon-button,
+.app-shell .recovery-trigger-card .icon-button,
+.app-shell .not-now-card .icon-button,
+.app-shell .recovery-trigger-card .tiny {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  border-radius: 8px !important;
+}
+
+.app-shell .recovery-trigger-card .tiny.active {
+  background: #c19643 !important;
+}
+
+.app-shell .not-now-status-row {
+  gap: 10px !important;
+}
+
+.app-shell .not-now-status-row button {
+  min-height: 48px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.95rem !important;
+}
+
+.app-shell .not-now-status-row button.active {
+  color: #ffffff !important;
+  background: #7d8a73 !important;
+}
+
+.app-shell .not-now-card.ready .not-now-status-row button.active {
+  background: #4f7765 !important;
+}
+
+@media (max-width: 820px) {
+  .app-shell .media-form,
+  .app-shell .recovery-trigger-form,
+  .app-shell .not-now-form,
+  .app-shell .media-log-list,
+  .app-shell .recovery-trigger-list,
+  .app-shell .not-now-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app-shell .media-log-panel,
+  .app-shell .recovery-trigger-panel,
+  .app-shell .not-now-panel {
+    gap: 16px !important;
+    padding: 14px !important;
+  }
+
+  .app-shell .media-card,
+  .app-shell .recovery-trigger-card,
+  .app-shell .not-now-card {
+    padding: 17px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell .media-log-panel,
+  .app-shell .recovery-trigger-panel,
+  .app-shell .not-now-panel {
+    padding: 11px !important;
+    background: rgba(255, 253, 247, 0.86) !important;
+  }
+
+  .app-shell .media-form,
+  .app-shell .recovery-trigger-form,
+  .app-shell .not-now-form {
+    padding: 14px !important;
+  }
+
+  .app-shell .media-card,
+  .app-shell .recovery-trigger-card,
+  .app-shell .not-now-card {
+    gap: 14px !important;
+    padding: 16px !important;
+  }
+
+  .app-shell .media-form input,
+  .app-shell .media-form select,
+  .app-shell .recovery-trigger-form input,
+  .app-shell .recovery-trigger-form select,
+  .app-shell .not-now-form input,
+  .app-shell .not-now-form select,
+  .app-shell .media-form .primary-button,
+  .app-shell .recovery-trigger-submit,
+  .app-shell .not-now-submit {
+    min-height: 56px !important;
+  }
+
+  .app-shell .not-now-status-row {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -993,9 +993,17 @@ function RecoveryTriggersApp() {
         <div className="recovery-trigger-wide">
           <TextArea label="メモ" value={memo} onChange={setMemo} />
         </div>
-        <label className="favorite-check">
-          <input type="checkbox" checked={favorite} onChange={(event) => setFavorite(event.target.checked)} />
-          <span>お気に入り</span>
+        <label
+          className="favorite-check"
+          style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 8, width: "100%", minHeight: 42 }}
+        >
+          <input
+            type="checkbox"
+            checked={favorite}
+            onChange={(event) => setFavorite(event.target.checked)}
+            style={{ width: 20, height: 20, flex: "0 0 auto", margin: 0 }}
+          />
+          <span style={{ display: "inline", color: "#25322c", fontWeight: 850, whiteSpace: "nowrap" }}>お気に入り</span>
         </label>
         <button className="primary-button full recovery-trigger-submit" type="submit">
           <Plus size={18} />

@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
 
-type View = "home" | "tasks" | "recovery" | "recoveryTriggers" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
+type View = "home" | "tasks" | "recovery" | "recoveryTriggers" | "notNow" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
 type TaskStatus = "todo" | "doing" | "done";
 type TaskPriority = "low" | "medium" | "high";
 type MoodStatus = "stable" | "uneasy" | "tired" | "slipping" | "recovering";
@@ -36,6 +36,7 @@ type MediaKind = "book" | "movie";
 type MediaStatus = "want" | "progress" | "done";
 type RecoveryTriggerKind = "rest" | "regulate" | "distract" | "connect" | "record";
 type RecoveryTriggerEffect = "quick" | "slow" | "conditional";
+type NotNowStatus = "hold" | "ready";
 type Energy = "low" | "middle" | "high";
 type Mind = "calm" | "uneasy" | "overloaded";
 type Need = "rest" | "light" | "connect";
@@ -94,6 +95,16 @@ type RecoveryTriggerEntry = {
   createdAt: string;
 };
 
+type NotNowEntry = {
+  id: string;
+  title: string;
+  reason: string;
+  alternative: string;
+  status: NotNowStatus;
+  memo: string;
+  createdAt: string;
+};
+
 type ShoppingItem = {
   id: string;
   name: string;
@@ -139,6 +150,7 @@ const SHOPPING_STORAGE_KEY = "shopping-list-mobile-v1";
 const VISIT_MEMO_STORAGE_KEY = "visit-nursing-medical-memo-v1";
 const MEDIA_LOG_STORAGE_KEY = "reading-movie-log-v1";
 const RECOVERY_TRIGGERS_STORAGE_KEY = "recovery-triggers-db-v1";
+const NOT_NOW_STORAGE_KEY = "not-now-list-v1";
 
 const today = toDateInputValue(new Date());
 
@@ -156,6 +168,7 @@ menuItems.push({ view: "visitMemo", title: "訪看・診察メモ", description:
 menuItems.push({ view: "mediaLog", title: "読書・映画ログ", description: "本と映画の記録、感想、もう一度度を残す", icon: Film });
 
 menuItems.push({ view: "recoveryTriggers", title: "回復トリガーDB", description: "効いた回復行動と代替案をカードで保存", icon: Database });
+menuItems.push({ view: "notNow", title: "今はやらないリスト", description: "禁止ではなく、今は保留にして軽くする場所", icon: Coffee });
 
 const moodOptions: Array<{ value: MoodStatus; label: string }> = [
   { value: "stable", label: "安定" },
@@ -182,6 +195,10 @@ const recoveryTriggerEffectLabel: Record<RecoveryTriggerEffect, string> = {
   quick: "すぐ効く",
   slow: "じわじわ効く",
   conditional: "条件つき",
+};
+const notNowStatusLabel: Record<NotNowStatus, string> = {
+  hold: "保留",
+  ready: "再開OK",
 };
 
 const signOptions: Array<{ id: SignId; label: string; guide: string }> = [
@@ -365,6 +382,7 @@ export function App() {
             {view === "tasks" && <TaskManager />}
             {view === "recovery" && <RecoveryLogApp />}
             {view === "recoveryTriggers" && <RecoveryTriggersApp />}
+            {view === "notNow" && <NotNowApp />}
             {view === "state" && <StateBranchUi />}
             {view === "signs" && <SignsCheckUi />}
             {view === "library" && <ComfortLibrary />}
@@ -1043,6 +1061,127 @@ function RecoveryTriggersApp() {
                 <p>
                   <b>メモ</b>
                   {trigger.memo}
+                </p>
+              ) : null}
+            </article>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function NotNowApp() {
+  const [items, setItems] = useState<NotNowEntry[]>(readStorage<NotNowEntry[]>(NOT_NOW_STORAGE_KEY, []));
+  const [title, setTitle] = useState("");
+  const [reason, setReason] = useState("");
+  const [alternative, setAlternative] = useState("");
+  const [status, setStatus] = useState<NotNowStatus>("hold");
+  const [memo, setMemo] = useState("");
+
+  useEffect(() => window.localStorage.setItem(NOT_NOW_STORAGE_KEY, JSON.stringify(items)), [items]);
+
+  const sortedItems = useMemo(
+    () => [...items].sort((a, b) => (a.status === b.status ? b.createdAt.localeCompare(a.createdAt) : a.status === "hold" ? -1 : 1)),
+    [items],
+  );
+
+  function addItem(event: FormEvent) {
+    event.preventDefault();
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return;
+    setItems((current) => [
+      {
+        id: createId("not-now"),
+        title: trimmedTitle,
+        reason: reason.trim(),
+        alternative: alternative.trim(),
+        status,
+        memo: memo.trim(),
+        createdAt: new Date().toISOString(),
+      },
+      ...current,
+    ]);
+    setTitle("");
+    setReason("");
+    setAlternative("");
+    setStatus("hold");
+    setMemo("");
+  }
+
+  function updateItem(id: string, patch: Partial<NotNowEntry>) {
+    setItems((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  }
+
+  return (
+    <section className="panel not-now-panel">
+      <form className="not-now-form" onSubmit={addItem}>
+        <label className="field not-now-wide">
+          <span>今はやらないこと</span>
+          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="例: 夜に大きな片付けを始める" />
+        </label>
+        <label className="field">
+          <span>状態</span>
+          <select value={status} onChange={(event) => setStatus(event.target.value as NotNowStatus)}>
+            <option value="hold">保留</option>
+            <option value="ready">再開OK</option>
+          </select>
+        </label>
+        <label className="field not-now-wide">
+          <span>理由</span>
+          <input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="例: 疲れていると広げすぎやすい" />
+        </label>
+        <label className="field not-now-wide">
+          <span>今は代わりにどうするか</span>
+          <input value={alternative} onChange={(event) => setAlternative(event.target.value)} placeholder="例: 机の上だけ1つ片付ける" />
+        </label>
+        <div className="not-now-wide">
+          <TextArea label="メモ" value={memo} onChange={setMemo} />
+        </div>
+        <button className="primary-button full not-now-submit" type="submit">
+          <Plus size={18} />
+          追加
+        </button>
+      </form>
+
+      <div className="not-now-list">
+        {sortedItems.length === 0 ? (
+          <Empty text="今はやらないことはまだありません。" />
+        ) : (
+          sortedItems.map((item) => (
+            <article className={item.status === "ready" ? "not-now-card ready" : "not-now-card"} key={item.id}>
+              <div className="not-now-head">
+                <div>
+                  <span className="not-now-kicker">今は保留</span>
+                  <strong>{item.title}</strong>
+                </div>
+                <button className="icon-button danger" type="button" onClick={() => setItems((current) => current.filter((currentItem) => currentItem.id !== item.id))} aria-label={`${item.title}を削除`}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="not-now-status-row">
+                {(["hold", "ready"] as const).map((statusValue) => (
+                  <button key={statusValue} className={item.status === statusValue ? "active" : ""} type="button" onClick={() => updateItem(item.id, { status: statusValue })}>
+                    {notNowStatusLabel[statusValue]}
+                  </button>
+                ))}
+              </div>
+              {item.reason ? (
+                <p>
+                  <b>理由</b>
+                  {item.reason}
+                </p>
+              ) : null}
+              {item.alternative ? (
+                <p>
+                  <b>今は代わりに</b>
+                  {item.alternative}
+                </p>
+              ) : null}
+              {item.memo ? (
+                <p>
+                  <b>メモ</b>
+                  {item.memo}
                 </p>
               ) : null}
             </article>

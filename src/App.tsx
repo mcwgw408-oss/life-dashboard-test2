@@ -9,6 +9,7 @@ import {
   Coffee,
   Crown,
   Dumbbell,
+  Film,
   HeartPulse,
   Home,
   ListChecks,
@@ -25,7 +26,7 @@ import {
 } from "lucide-react";
 import { CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
 
-type View = "home" | "tasks" | "recovery" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo";
+type View = "home" | "tasks" | "recovery" | "state" | "signs" | "library" | "roulette" | "shopping" | "visitMemo" | "mediaLog";
 type TaskStatus = "todo" | "doing" | "done";
 type TaskPriority = "low" | "medium" | "high";
 type MoodStatus = "stable" | "uneasy" | "tired" | "slipping" | "recovering";
@@ -107,6 +108,7 @@ const ROULETTE_ACTIONS_STORAGE_KEY = "today-roulette-actions-v1";
 const ROULETTE_HISTORY_STORAGE_KEY = "today-roulette-history-v1";
 const SHOPPING_STORAGE_KEY = "shopping-list-mobile-v1";
 const VISIT_MEMO_STORAGE_KEY = "visit-nursing-medical-memo-v1";
+const MEDIA_LOG_STORAGE_KEY = "media-log-v1";
 const today = toDateInputValue(new Date());
 
 const menuItems: Array<{ view: Exclude<View, "home">; title: string; description: string; icon: typeof Home }> = [
@@ -117,9 +119,11 @@ const menuItems: Array<{ view: Exclude<View, "home">; title: string; description
   { view: "library", title: "安心文庫ビューア", description: "安心文をタグで保存して読み返す", icon: BookOpen },
   { view: "roulette", title: "今日やることルーレット", description: "迷った時に小さな行動を1つ選ぶ", icon: Shuffle },
   { view: "shopping", title: "買い物リスト", description: "買い忘れを減らす片手用リスト", icon: ShoppingBasket },
+  { view: "visitMemo", title: "診察・訪看メモ", description: "毎日の記録をコピー用に整える", icon: NotebookPen },
+  { view: "mediaLog", title: "読書・映画ログ", description: "本と映画の感想をスマホで残す", icon: Film },
 ];
 
-menuItems.push({ view: "visitMemo", title: "訪看・診察メモ", description: "毎日の記録をコピー用に整える", icon: NotebookPen });
+
 
 const moodOptions: Array<{ value: MoodStatus; label: string }> = [
   { value: "stable", label: "安定" },
@@ -318,6 +322,7 @@ export function App() {
             {view === "roulette" && <RouletteApp />}
             {view === "shopping" && <ShoppingListApp />}
             {view === "visitMemo" && <VisitMemoApp />}
+            {view === "mediaLog" && <MediaLogApp />}
           </>
         )}
       </section>

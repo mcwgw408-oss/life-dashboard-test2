@@ -2203,3 +2203,405 @@ select:focus {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Align the three added screens with the existing mini-app design system. */
+.media-log-panel,
+.recovery-trigger-panel,
+.not-now-panel {
+  gap: 12px !important;
+  padding: 12px !important;
+  border: 1px solid rgba(43, 57, 50, 0.12) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: none !important;
+}
+
+.media-form,
+.recovery-trigger-form,
+.not-now-form {
+  gap: 9px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.media-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.recovery-trigger-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.not-now-form {
+  grid-template-columns: minmax(0, 1fr) 150px !important;
+}
+
+.media-form .field,
+.recovery-trigger-form .field,
+.not-now-form .field,
+.media-memo-field .field,
+.recovery-trigger-wide .field,
+.not-now-wide .field {
+  gap: 5px !important;
+}
+
+.media-form .field span,
+.recovery-trigger-form .field span,
+.not-now-form .field span,
+.media-memo-field .field span,
+.recovery-trigger-wide .field span,
+.not-now-wide .field span {
+  color: #6c7972 !important;
+  font-size: 0.76rem !important;
+  font-weight: 850 !important;
+  line-height: 1.35 !important;
+}
+
+.media-form input,
+.media-form select,
+.recovery-trigger-form input,
+.recovery-trigger-form select,
+.not-now-form input,
+.not-now-form select {
+  height: 42px !important;
+  min-height: 42px !important;
+  border: 1px solid rgba(43, 57, 50, 0.14) !important;
+  border-radius: 8px !important;
+  padding: 0 11px !important;
+  color: #25322c !important;
+  background: #fffefa !important;
+  box-shadow: none !important;
+}
+
+.media-form textarea,
+.recovery-trigger-form textarea,
+.not-now-form textarea {
+  min-height: 78px !important;
+  border: 1px solid rgba(43, 57, 50, 0.14) !important;
+  border-radius: 8px !important;
+  padding: 9px 10px !important;
+  color: #25322c !important;
+  background: #fffefa !important;
+  line-height: 1.5 !important;
+  box-shadow: none !important;
+}
+
+.media-form input:focus,
+.media-form textarea:focus,
+.media-form select:focus,
+.recovery-trigger-form input:focus,
+.recovery-trigger-form textarea:focus,
+.recovery-trigger-form select:focus,
+.not-now-form input:focus,
+.not-now-form textarea:focus,
+.not-now-form select:focus {
+  border-color: #45745f !important;
+  box-shadow: 0 0 0 3px rgba(69, 116, 95, 0.16) !important;
+}
+
+.media-form .primary-button,
+.recovery-trigger-submit,
+.not-now-submit {
+  min-height: 42px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  padding: 0 13px !important;
+  color: #ffffff !important;
+  background: #45745f !important;
+  font-size: 1rem !important;
+  font-weight: 850 !important;
+  box-shadow: none !important;
+}
+
+.favorite-check {
+  min-height: 42px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.media-log-list,
+.recovery-trigger-list,
+.not-now-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.media-card,
+.recovery-trigger-card,
+.not-now-card {
+  gap: 10px !important;
+  padding: 12px !important;
+  border: 1px solid rgba(43, 57, 50, 0.12) !important;
+  border-radius: 8px !important;
+  background: #fffefa !important;
+  box-shadow: 0 8px 20px rgba(43, 57, 50, 0.06) !important;
+}
+
+.recovery-trigger-card {
+  background: #fffefa !important;
+}
+
+.not-now-card {
+  border-color: rgba(43, 57, 50, 0.12) !important;
+  background: #fffefa !important;
+}
+
+.not-now-card.ready {
+  border-color: rgba(43, 57, 50, 0.12) !important;
+  background: #f3f8f0 !important;
+}
+
+.media-card-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.recovery-trigger-head {
+  grid-template-columns: 34px minmax(0, 1fr) 34px !important;
+  gap: 9px !important;
+  align-items: center !important;
+}
+
+.not-now-head {
+  grid-template-columns: minmax(0, 1fr) 34px !important;
+  gap: 9px !important;
+  align-items: start !important;
+}
+
+.media-card-body {
+  gap: 3px !important;
+}
+
+.media-card-body strong,
+.recovery-trigger-head strong,
+.not-now-head strong {
+  color: #27342e !important;
+  font-size: 1.06rem !important;
+  font-weight: 850 !important;
+  line-height: 1.35 !important;
+}
+
+.media-card-body small,
+.recovery-trigger-head small {
+  color: #68766e !important;
+  font-size: 0.84rem !important;
+  font-weight: 800 !important;
+}
+
+.media-kind {
+  min-height: auto !important;
+  border-radius: 999px !important;
+  padding: 4px 9px !important;
+  color: #ffffff !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+}
+
+.media-kind.book {
+  background: #45745f !important;
+}
+
+.media-kind.movie {
+  background: #5f5f77 !important;
+}
+
+.media-meta,
+.recovery-trigger-tags {
+  gap: 6px !important;
+}
+
+.media-meta span,
+.recovery-trigger-tags span {
+  min-height: 25px !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  font-size: 0.8rem !important;
+  font-weight: 850 !important;
+  line-height: 1.2 !important;
+}
+
+.media-meta span {
+  color: #536158 !important;
+  background: #f2eee6 !important;
+}
+
+.recovery-trigger-tags span {
+  color: #3e5147 !important;
+  background: #edf6ef !important;
+}
+
+.not-now-kicker {
+  min-height: auto !important;
+  border-radius: 999px !important;
+  padding: 3px 8px !important;
+  color: #6f624f !important;
+  background: #f1eadb !important;
+  font-size: 0.74rem !important;
+  font-weight: 900 !important;
+}
+
+.not-now-card.ready .not-now-kicker {
+  color: #3f6455 !important;
+  background: #e1efe7 !important;
+}
+
+.media-card p,
+.recovery-trigger-card p,
+.not-now-card p {
+  gap: 3px !important;
+  color: #536158 !important;
+  font-size: 1rem !important;
+  line-height: 1.55 !important;
+}
+
+.recovery-trigger-card b,
+.not-now-card b {
+  color: #6c7972 !important;
+  font-size: 0.76rem !important;
+  font-weight: 850 !important;
+}
+
+.media-card .icon-button,
+.recovery-trigger-card .icon-button,
+.not-now-card .icon-button,
+.recovery-trigger-card .tiny {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  border: 1px solid rgba(43, 57, 50, 0.13) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.media-card .icon-button.danger,
+.recovery-trigger-card .icon-button.danger,
+.not-now-card .icon-button.danger {
+  color: #9c463d !important;
+  background: #fff0ed !important;
+}
+
+.recovery-trigger-card .tiny {
+  color: #506159 !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+}
+
+.recovery-trigger-card .tiny.active {
+  color: #ffffff !important;
+  background: #b07726 !important;
+}
+
+.not-now-status-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 7px !important;
+}
+
+.not-now-status-row button {
+  min-height: 38px !important;
+  border: 1px solid rgba(43, 57, 50, 0.12) !important;
+  border-radius: 8px !important;
+  color: #5c665e !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  font-size: 0.92rem !important;
+  font-weight: 850 !important;
+  box-shadow: none !important;
+}
+
+.not-now-status-row button.active {
+  border-color: transparent !important;
+  color: #ffffff !important;
+  background: #7c8a72 !important;
+}
+
+.not-now-card.ready .not-now-status-row button.active {
+  background: #45745f !important;
+}
+
+@media (max-width: 820px) {
+  .media-form,
+  .recovery-trigger-form,
+  .not-now-form,
+  .media-log-list,
+  .recovery-trigger-list,
+  .not-now-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  .media-log-panel,
+  .recovery-trigger-panel,
+  .not-now-panel {
+    padding: 12px !important;
+  }
+
+  .media-card,
+  .recovery-trigger-card,
+  .not-now-card {
+    padding: 12px !important;
+  }
+
+  .media-form .primary-button,
+  .recovery-trigger-submit,
+  .not-now-submit,
+  .not-now-status-row button {
+    min-height: 48px !important;
+  }
+
+  .media-card .icon-button,
+  .recovery-trigger-card .icon-button,
+  .not-now-card .icon-button,
+  .recovery-trigger-card .tiny {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+
+  .recovery-trigger-head {
+    grid-template-columns: 40px minmax(0, 1fr) 40px !important;
+  }
+
+  .not-now-head {
+    grid-template-columns: minmax(0, 1fr) 40px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .media-log-panel,
+  .recovery-trigger-panel,
+  .not-now-panel {
+    padding: 10px !important;
+  }
+
+  .media-card,
+  .recovery-trigger-card,
+  .not-now-card {
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .media-form input,
+  .media-form select,
+  .recovery-trigger-form input,
+  .recovery-trigger-form select,
+  .not-now-form input,
+  .not-now-form select {
+    height: 46px !important;
+    min-height: 46px !important;
+  }
+
+  .media-form textarea,
+  .recovery-trigger-form textarea,
+  .not-now-form textarea {
+    min-height: 86px !important;
+  }
+
+  .not-now-status-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
